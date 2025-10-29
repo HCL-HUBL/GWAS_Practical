@@ -49,17 +49,21 @@ To perform a GWAS we need the phenotype of each individual and their genotype at
 
 **Q1.1:** Have a look in chr15.bim. At which genomic position is located SNP rs4932079 ? What are two the observed alleles for this SNP is this dataset ?
 
- <details>
+<details>
     <summary> Answer </summary> 
-    rs7111951 is located on chr11 at position 19973135 and the two observed alleles are *G* and *A*.
- </details>
+
+> rs7111951 is located on chr11 at position 19973135 and the two observed alleles are *G* and *A*.
+
+</details>
 
 **Q1.2:** Have a look in gwas.fam. Which gender is individual NA18550 ?
 
- <details>
+<details>
     <summary> Answer </summary> 
-    NA18547 is a female (5th column = 2)
- </details>
+    
+> NA18547 is a female (5th column = 2)
+
+</details>
 
 ## Our first steps with plink:
 
@@ -77,10 +81,12 @@ plink --bfile gwas --missing --out gwas_missing
 
 **Q1.3:** How many individuals contains this dataset ? How many males/females ? How many variants ?
 
- <details>
+<details>
     <summary> Answer </summary> 
-    The dataset contains 90 people (45 males, 45 females) and 261,184 variants. 
- </details>
+    
+> The dataset contains 90 people (45 males, 45 females) and 261,184 variants. 
+
+</details>
 
 ## Remove individuals based on missing data:
 
@@ -92,19 +98,23 @@ plink --bfile gwas --geno 0.05 --make-bed --out gwas_filtered
 
 **Q1.4:** Write the command to filter invididuals with more than 5% missing data.
 
- <details>
+<details>
     <summary> Answer </summary> 
+
     ```shell
     plink --bfile gwas_filtered --mind 0.05 --make-bed --out gwas_filtered
     ```
- </details>
+
+</details>
 
  **Q1.5:** How many individuals and variants are left after filtering ?
 
- <details>
+<details>
     <summary> Answer </summary> 
-    258,118 variants and 89 people are left.
- </details>
+
+> 258,118 variants and 89 people are left.
+
+</details>
 
 Missing data can arise due to different factors, including poor quality libraries, errors during genotyping etc...
 
@@ -123,14 +133,18 @@ plink1.9 --bfile gwas_filtered --hwe 1e-50 --make-bed --out gwas_filtered
 
 <details>
     <summary> Answer </summary> 
-    0 variants are removed with 1e-50. When using 0.05, ~8000 variants are removed, but you are at risk of removing variants which are not resulting from genotyping errors and are associated with the trait.
+
+> 0 variants are removed with 1e-50. When using 0.05, ~8000 variants are removed, but you are at risk of removing variants which are not resulting from genotyping errors and are associated with the trait.
+
 </details>
 
  **Q1.7:** PLINK only performs this tests on controls (based on information from the .fam file), why ?
 
  <details>
     <summary> Answer </summary> 
-    In cases, we can expect some variants to be not constrainted by natural selection, which is one of the assumptions of the HWE equation.
+    
+> In cases, we can expect some variants to be not constrainted by natural selection, which is one of the assumptions of the HWE equation.
+
 </details>
 
 ## Remove individuals with extreme heterozygosity
@@ -151,10 +165,12 @@ This will generate a list of pruned variants, using a window size of 200 variant
 **Q1.8:** Write the command to compute the F coefficient on the *gwas_filtered* dataset, using only the SNPs present in *gwas_filtered.pruned.in*.
 
  <details>
-    <summary> Answer </summary> 
+    <summary> Answer </summary>
+
 ```shell
 plink --bfile gwas_filtered --extract gwas_filtered.pruned.in --het --out gwas_filtered
 ```
+
  </details>
 
 In this practical, we will remove samples outside 3 standard deviations for the cohort's mean. The [het_check.R](scripts/het_check.R) script can be used for this purpose ("both" means that both individuals with a F coeff >= 3 SDs and <= 3 SDs will be removed):
