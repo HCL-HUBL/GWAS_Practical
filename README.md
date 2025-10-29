@@ -51,17 +51,40 @@ To perform a GWAS we need the phenotype of each individual and their genotype at
 
 **Questions**: 
 
- - Have a look in chr15.bim. At which genomic position is located SNP rs4932079 ? What are two the observed alleles for this SNP is this dataset ?
+ 1. Have a look in chr15.bim. At which genomic position is located SNP rs4932079 ? What are two the observed alleles for this SNP is this dataset ?
 
  <details>
     <summary> Answer </summary> 
-        > rs7111951 is located on chr11 at position 19973135 and the two observed alleles are *G* and *A*.
+> rs7111951 is located on chr11 at position 19973135 and the two observed alleles are *G* and *A*.
  </details>
 
-## Quality Control
+ 2. Have a look in gwas.fam. Which gender is individual NA18550 ?
+
+ <details>
+    <summary> Answer </summary> 
+> NA18547 is a female (5th column = 2)
+ </details>
+
+## First steps with plink:
 
 PLINK is a command line standalone software dedicated to GWAS analyses. You will call this software with the alias `plink``. Try to print the help menu with the following command-line:
 
 ```shell
 plink --help
 ```
+
+For each of its function, PLINK will print a summary of data and actions in the console. Just load the gwas dataset with PLINK by using the `--bfile`` option, indicating you are using a binary dataset :
+
+```shell
+plink --bfile gwas --noweb
+```
+
+3. How many individuals contains this dataset ? How many males/females ? How many variants ?
+
+ <details>
+    <summary> Answer </summary> 
+> The dataset contains 90 people (45 males, 45 females) and 261,184 variants. 
+ </details>
+
+## Quality Control:
+
