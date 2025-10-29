@@ -2,8 +2,7 @@
 
 ## Introduction
 
-A Genome Wide Association Study (GWAS) aims at discovering genomic alleles that are associated to a phenotypic trait of interest.
-The main rationale behind a GWAS is to compare SNPs frequencies between groups of people harboring the trait or not.
+A Genome Wide Association Study (GWAS) aims at discovering genomic alleles that are associated to a phenotypic trait of interest. The main rationale behind a GWAS is to compare SNPs frequencies between groups of people harboring the trait or not.
 
 Here, we will perform a GWAS analysis on 90 Asian HapMap individuals (Han Chinese from Beijing and Japanese from Tokyo). From the actual HapMap SNP data, ~250,000 SNPs have been extracted, which are the autosomal SNPs on half of the Affymetrix 500K SNP Array product. Along with a simulated disease phenotype.
 
@@ -20,8 +19,7 @@ The data for this practical is available under `./data/` and contains:
  - *gwas.covars*: a file of covariates
  - *regions.bed*: a file listing regions to analyse
 
-To perform a GWAS we need the phenotype of each individual and their genotype at each marker. To perform the quality control steps, we will use
-the [PLINK](https://www.cog-genomics.org/plink/1.9/) software, which read the required information from coupled .bim / .bed and .fam files.
+To perform a GWAS we need the phenotype of each individual and their genotype at each marker. To perform the quality control steps, we will use the [PLINK](https://www.cog-genomics.org/plink/1.9/) software, which read the required information from coupled .bim / .bed and .fam files.
 
  - The [.bim](https://www.cog-genomics.org/plink/1.9/formats#bim) file lists all the genotyped variants (position and alleles):
   
@@ -38,13 +36,13 @@ the [PLINK](https://www.cog-genomics.org/plink/1.9/) software, which read the re
 
  - The [.fam](https://www.cog-genomics.org/plink/1.9/formats#fam) file contains sample information:
 
-| FID | IID | paternal\_ID | maternal\_ID | sex | phenotype |
-| --- | --- | --- | --- | --- | --- |
-| CH18524 | NA18524 | 0 | 0 | 1 | 1 |
-| CH18526 | NA18526 | 0 | 0 | 2 | 1 |
-| CH18529 | NA18529 | 0 | 0 | 2 | 1 |
-| CH18532 | NA18532 | 0 | 0 | 2 | 1 |
-| CH18537 | NA18537 | 0 | 0 | 2 | 2 |
+    | FID | IID | paternal\_ID | maternal\_ID | sex | phenotype |
+    | --- | --- | --- | --- | --- | --- |
+    | CH18524 | NA18524 | 0 | 0 | 1 | 1 |
+    | CH18526 | NA18526 | 0 | 0 | 2 | 1 |
+    | CH18529 | NA18529 | 0 | 0 | 2 | 1 |
+    | CH18532 | NA18532 | 0 | 0 | 2 | 1 |
+    | CH18537 | NA18537 | 0 | 0 | 2 | 2 |
 
  - The [.bed](https://www.cog-genomics.org/plink/1.9/formats#bed) file represents the genotype calls. Must be accompanied by a .bim and .fam file.
 
@@ -57,7 +55,7 @@ the [PLINK](https://www.cog-genomics.org/plink/1.9/) software, which read the re
 
  <details>
     <summary> Answer </summary> 
-     rs7111951 is located on chr11 at position 19973135 and the two observed alleles are *G* and *A*.
+        > rs7111951 is located on chr11 at position 19973135 and the two observed alleles are *G* and *A*.
  </details>
 
 ## Quality Control
