@@ -4,7 +4,8 @@ In this pratical the quality control steps will be shared between the common sin
  1. Remove individuals based on missing data
  2. Remove variants based on Hardy-Weinberg
  3. Remove individuals with extreme heterozygosity
- 4. Compute the genomic PCA
+ 4. Remove related individuals
+ 5. Compute the genomic PCA
 
 ## The data:
 
@@ -101,7 +102,7 @@ plink --bfile gwas --geno 0.05 --make-bed --out gwas_filtered
 <details>
     <summary> Answer </summary> 
 
-    ```shell
+    ```
     plink --bfile gwas_filtered --mind 0.05 --make-bed --out gwas_filtered
     ```
 
@@ -167,7 +168,7 @@ This will generate a list of pruned variants, using a window size of 200 variant
  <details>
     <summary> Answer </summary>
 
-```shell
+```
 plink --bfile gwas_filtered --extract gwas_filtered.pruned.in --het --out gwas_filtered
 ```
 
@@ -191,5 +192,9 @@ We can then produce the final filtered file by only keeping the individuals whic
 ```shell
 plink --bfile gwas_filtered --keep gwas_filtered.valides --make-bed --out gwas_filtered
 ```
+
+## Remove related individuals
+
+One of the assumptions in a GWAS is that the observations (individuals) are independant. If two individuals are from the same family, they share the same genetics but also a similar environment, which can lead to spurious associations. If family information is not present, we can use the IBD (Identity By Descent) to estimate the relatedness between pairs of individuals.
 
 ## Compute the genomic PCA
