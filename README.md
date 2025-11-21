@@ -2,22 +2,28 @@
 
 ## Introduction:
 
-A Genome Wide Association Study (GWAS) aims at discovering genomic alleles that are associated to a phenotypic trait of interest. The main rationale behind a GWAS is to compare SNPs frequencies between groups of people harboring the trait or not.
+A Genome Wide Association Study (GWAS) aims at discovering genomic alleles which are associated to a phenotypic trait of interest. The main rationale behind a GWAS is to compare SNPs frequencies between groups of people harboring the trait or not.
 
-The practical is composed of three main parts:
- - [Quality Control on the input data](1_Quality_Control/)
+This practical is composed of three parts:
+ - [Quality Control on the input data (QC)](1_QC/)
  - [Genome Wide Association Studies (GWAS)](2_GWAS/)
  - [Rare Variants Association Studies (RVAS)](3_RVAS/)
 
-## Dataset:
+## The Dataset:
 
-In this practical, we will perform a GWAS and RVAS analysis using plink and R, on a dataset consisting of 90 Asian HapMap individuals (Han Chinese from Beijing and Japanese from Tokyo) from the actual HapMap data. It contains a subset of ~250,000 SNPs from the Affymetrix 500K SNP Array product and with a simulated disease phenotype (data from: https://www.cog-genomics.org/plink/1.9/resources).
+In this practical, we will perform a GWAS and RVAS analysis using plink and R, on a [dataset](./data/) consisting of 90 Asian HapMap individuals (Han Chinese from Beijing and Japanese from Tokyo) from the actual HapMap data. It contains a subset of ~250,000 SNPs from the Affymetrix 500K SNP Array product and with a simulated disease phenotype (data from: https://www.cog-genomics.org/plink/1.9/resources).
 
-We also simulated rare SNPs on specific genes to perform Rare Variants Association Studies (RVAS).
+We also added simulated rare SNPs on specific genes to perform Rare Variants Association Studies (RVAS).
 
-## Further Reading:
+## Starting point:
 
-Please find below a non-comprehensive list of interesting papers regarding GWAS and RVAS analyses:
+We are starting with the [Quality Control steps](1_QC/).
+
+## Further Ressources:
+
+The GWAS Catalog: https://www.ebi.ac.uk/gwas/ a repository of summary statistics from published GWAS.
+
+A non-comprehensive list of interesting papers regarding GWAS and RVAS analyses:
 
 ### Reviews: 
  - Brandes N., Weissbrod O. & Linial M. (2022) Open problems in human trait genetics. *Genome Biol*

@@ -1,11 +1,12 @@
 # Quality Control
 
 In this pratical the quality control steps will be shared between the common single variants (GWAS) and rare variants (RVAS) association studies. The main steps are:
- 1. Remove individuals based on missing data
- 2. Remove variants based on Hardy-Weinberg
- 3. Remove individuals with extreme heterozygosity
- 4. Remove related individuals
- 5. Compute the genomic PCA
+ 1. [Remove variants and individuals based on missing data](#missing-data)
+ 2. [Remove variants based on Hardy-Weinberg](#hardy-weinberg)
+ 3. [Remove individuals with extreme heterozygosity](#heterozygosity)
+ 4. [Remove related individuals](#kinship)
+ 5. [Compute the PCA](#principal-components-analysis)
+ 6. [Remove Rare SNPs](#minor-allele-frequencies)
 
 ## The data:
 
@@ -89,7 +90,7 @@ plink --bfile gwas --missing --out gwas_missing
 
 </details>
 
-## Remove individuals based on missing data:
+## Missing data
 
 The robustness of any result obtained with a GWAS depends heavily on the quality of the input data. This is why it is necessary to assess and filter the input data before doing any association tests. Usually individuals and variants with >5% missing data are removed from the dataset. This threshold can be adapted to your dataset (higher to keep more individuals, lower to be stricter). In PLINK, this can be done using the `--geno` and `--mind` options to filter variants and individuals respectively. For example to remove variants with >5% missing data, we can write:
 
@@ -102,7 +103,7 @@ plink --bfile gwas --geno 0.05 --make-bed --out gwas_filtered
 <details>
     <summary> Answer </summary> 
 
-    ```
+    ```shell
     plink --bfile gwas_filtered --mind 0.05 --make-bed --out gwas_filtered
     ```
 
@@ -122,7 +123,7 @@ Missing data can arise due to different factors, including poor quality librarie
 > [!TIP]
 > You can manually remove individuals and variants with the `--extract` and `--exclude` options. This can be useful if some individuals removed consent to participate in the study or if some exclusions criterias are met.
 
-## Remove variants based on Hardy-Weinberg
+## Hardy-Weinberg
 
 The `--hwe <p-value>` option in PLINK filters out all variants which have Hardy-Weinberg equilibrium exact test p-value below the provided threshold. This can be used to filter out genotyping errors, which can result in false positive hits. An extreme p-value (ef: 1e-50) can be used to avoid filtering out actual variants:
 
@@ -148,7 +149,7 @@ plink1.9 --bfile gwas_filtered --hwe 1e-50 --make-bed --out gwas_filtered
 
 </details>
 
-## Remove individuals with extreme heterozygosity
+## Heterozygosity
 
 Individuals with extreme heterozygosity levels are usually removed from GWAS analyses, to avoid biases due to consanguinity (low het. levels) and library preparation (high het. levels.). We will use the F coefficient, which reports the observed and expected autosomal homozygous genotype counts for each sample.
 
@@ -193,8 +194,22 @@ We can then produce the final filtered file by only keeping the individuals whic
 plink --bfile gwas_filtered --keep gwas_filtered.valides --make-bed --out gwas_filtered
 ```
 
-## Remove related individuals
+## Kinship
 
 One of the assumptions in a GWAS is that the observations (individuals) are independant. If two individuals are from the same family, they share the same genetics but also a similar environment, which can lead to spurious associations. If family information is not present, we can use the IBD (Identity By Descent) to estimate the relatedness between pairs of individuals.
 
-## Compute the genomic PCA
+## Principal Components Analysis
+
+
+## Minor Allele Frequencies
+
+The Minor Allele Frequency (MAF) of a SNP is the frequency at which the second most common allele occurs in a given population. Some SNPs are very rare, and even if associated with the trait, can not be detected using a GWAS. Indeed, we need enough statistical power, and thus enough carriers of each allele, in order to detect an association.
+
+In order to reduce the number of tests 
+
+Some SNPs are very rare in the population. Even if these SNPs are associated with the
+tested trait and given the high number of tests having to be performed in a GWAS analysis,
+we probably would not have the statistical power to detect such associations. We choose to
+remove all SNPs having a Minor Allele Frequency less than 0.05. Perform this filtering in
+chr15_F3 dataset by using the --maf 0.01 option. The output dataset will be called
+chr15_F4 and will be in binary format. How many SNPs are filtered this way ?
