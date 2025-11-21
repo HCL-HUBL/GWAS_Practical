@@ -1,6 +1,7 @@
 # Quality Control
 
-In this pratical the quality control steps will be shared between the common single variants (GWAS) and rare variants (RVAS) association studies. The main steps are:
+In this pratical the quality control steps will be shared between the common (GWAS) and rare (RVAS) variants association studies. The main steps are:
+
  1. [Remove variants and individuals based on missing data](#missing-data)
  2. [Remove variants based on Hardy-Weinberg](#hardy-weinberg)
  3. [Remove individuals with extreme heterozygosity](#heterozygosity)
@@ -10,7 +11,7 @@ In this pratical the quality control steps will be shared between the common sin
 
 ## The data:
 
-The data for this practical is available under `./data/` and contains:
+The data for this practical is available under [./data/](../data/) and contains:
  - *gwas.{bim,bed,fam}*: genotyping data in the [plink](https://www.cog-genomics.org/plink/1.9/) format
  - *gwas.covars*: a file of covariates
  - *regions.bed*: a file listing regions to analyse
@@ -49,7 +50,7 @@ To perform a GWAS we need the phenotype of each individual and their genotype at
 
 **Questions**: 
 
-**Q1.1:** Have a look in chr15.bim. At which genomic position is located SNP rs4932079 ? What are two the observed alleles for this SNP is this dataset ?
+**Q1.1:** Have a look in chr15.bim. At which genomic position is located SNP rs4932079? What are two the observed alleles for this SNP is this dataset?
 
 <details>
     <summary> Answer </summary> 
@@ -58,7 +59,7 @@ To perform a GWAS we need the phenotype of each individual and their genotype at
 
 </details>
 
-**Q1.2:** Have a look in gwas.fam. Which gender is individual NA18550 ?
+**Q1.2:** Have a look in gwas.fam. Which gender is individual NA18550?
 
 <details>
     <summary> Answer </summary> 
@@ -81,7 +82,7 @@ For each of its function, PLINK will print a summary of data and actions in the 
 plink --bfile gwas --missing --out gwas_missing
 ```
 
-**Q1.3:** How many individuals contains this dataset ? How many males/females ? How many variants ?
+**Q1.3:** How many individuals contains this dataset ? How many males/females? How many variants?
 
 <details>
     <summary> Answer </summary> 
@@ -98,18 +99,20 @@ The robustness of any result obtained with a GWAS depends heavily on the quality
 plink --bfile gwas --geno 0.05 --make-bed --out gwas_filtered
 ```
 
-**Q1.4:** Write the command to filter invididuals with more than 5% missing data.
+The output dataset will be called `gwas_filtered` and will be in the plink format (.bim/.bed/.fam).
+
+**Q1.4:** Write the command to filter invididuals with more than 5% missing data (do not forget to start from the SNP-filtered dataset).
 
 <details>
     <summary> Answer </summary> 
 
-    ```shell
-    plink --bfile gwas_filtered --mind 0.05 --make-bed --out gwas_filtered
-    ```
+```shell
+plink --bfile gwas_filtered --mind 0.05 --make-bed --out gwas_filtered
+```
 
 </details>
 
- **Q1.5:** How many individuals and variants are left after filtering ?
+ **Q1.5:** How many individuals and variants are left after filtering?
 
 <details>
     <summary> Answer </summary> 
@@ -125,13 +128,15 @@ Missing data can arise due to different factors, including poor quality librarie
 
 ## Hardy-Weinberg
 
+Hardy-Weinberg Equilibrium (HWE) is a consequence of random mating within a population in the absence of mutation, migration, natural selection, or random drift. A significant departure from HWE for a SNP in a sample may indicate non-random mating and possibly population stratification, non-random genotyping error, or missing genotype data in which one allele or genotype is more often misclassified or missing than the other. Including such SNPs can result in spurious associations.
+
 The `--hwe <p-value>` option in PLINK filters out all variants which have Hardy-Weinberg equilibrium exact test p-value below the provided threshold. This can be used to filter out genotyping errors, which can result in false positive hits. An extreme p-value (ef: 1e-50) can be used to avoid filtering out actual variants:
 
 ```shell
-plink1.9 --bfile gwas_filtered --hwe 1e-50 --make-bed --out gwas_filtered
+plink --bfile gwas_filtered --hwe 1e-50 --make-bed --out gwas_filtered
 ```
 
- **Q1.6:** How many variants are removed ? What happens if you set the p-value to 0.05 ? What are the consequences of choosing one value or the other ?
+ **Q1.6:** How many variants are removed ? What happens if you set the p-value to 0.05 ? What are the consequences of choosing one value or the other?
 
 <details>
     <summary> Answer </summary> 
@@ -140,7 +145,7 @@ plink1.9 --bfile gwas_filtered --hwe 1e-50 --make-bed --out gwas_filtered
 
 </details>
 
- **Q1.7:** PLINK only performs this tests on controls (based on information from the .fam file), why ?
+ **Q1.7:** PLINK only performs this tests on controls (based on information from the .fam file), why?
 
  <details>
     <summary> Answer </summary> 
@@ -151,7 +156,7 @@ plink1.9 --bfile gwas_filtered --hwe 1e-50 --make-bed --out gwas_filtered
 
 ## Heterozygosity
 
-Individuals with extreme heterozygosity levels are usually removed from GWAS analyses, to avoid biases due to consanguinity (low het. levels) and library preparation (high het. levels.). We will use the F coefficient, which reports the observed and expected autosomal homozygous genotype counts for each sample.
+Individuals with extreme heterozygosity levels are usually removed from GWAS analyses, to avoid biases due to consanguinity (low het. levels) and library preparation (high het. levels). We will use the F coefficient, which reports the observed and expected autosomal homozygous genotype counts for each sample.
 
 > [!Note]
 > The F coefficient is inversely correlated with heterozygosity (the lower the heterozygosity, the larger the F value).
@@ -169,8 +174,8 @@ This will generate a list of pruned variants, using a window size of 200 variant
  <details>
     <summary> Answer </summary>
 
-```
-plink --bfile gwas_filtered --extract gwas_filtered.pruned.in --het --out gwas_filtered
+```shell
+plink --bfile gwas_filtered --extract gwas_filtered.prune.in --het --out gwas_filtered
 ```
 
  </details>
@@ -191,25 +196,75 @@ The script also plots the distribution of the F coefficients in the cohort. A lo
 We can then produce the final filtered file by only keeping the individuals which are passing the heterozygosity filter:
 
 ```shell
-plink --bfile gwas_filtered --keep gwas_filtered.valides --make-bed --out gwas_filtered
+plink --bfile gwas_filtered --keep gwas_filtered.het.valides --make-bed --out gwas_filtered
 ```
 
 ## Kinship
 
-One of the assumptions in a GWAS is that the observations (individuals) are independant. If two individuals are from the same family, they share the same genetics but also a similar environment, which can lead to spurious associations. If family information is not present, we can use the IBD (Identity By Descent) to estimate the relatedness between pairs of individuals.
+One of the assumptions in a GWAS is that the observations (individuals) are independant. If two individuals are from the same family, they share the same genetics but also a similar environment, which can lead to spurious associations. If family information is not present, we can use the Identity-By-Descent (IBD) to estimate the relatedness between pairs of individuals. PLINK returns the IBD as a `PI_HAT` value:
+
+> PI_HAT = P(IBD=2) + 0.5*P(IBD=1) 
+
+Where:
+ - *P(IBD=2)* is the probability that 2 individuals share 2 alleles IBD.
+ - *P(IBD=1)* is the probability that 2 individuals share 1 allele IBD.
+
+Use PLINK to list individuals having PI-HAT > 0.3. A `related.genome` file containing interbreeding statistics for each pair of individuals with Pi-HAT > 0.3 is created. Please note that the PI_HAT calculation is not LD-aware, luckily, we can reuse the pruned list of variants generated during the previous step `gwas_filtered.prune.in`:
+
+```shell
+plink --bfile gwas_filtered --extract gwas_filtered.prune.in --genome --out related --min 0.3
+```
+
+The file is empty! We do not have close relatives in the dataset (if you have time you can try to run the same command on the raw dataset: `gwas`). If we had some relatives, we could use the `--remove related.genome` command to remove individuals listed in the first 2 columns of the `related.genome` file (family-id and individual-id).
+
+> [!NOTE]
+> PLINK's `--genome` command is not very accurate. Its accuracy is sufficient for this pratical, but dedicated tools, such as [KING](https://academic.oup.com/bioinformatics/article/26/22/2867/228512) can be used instead.
 
 ## Principal Components Analysis
 
+A Principal Component Analysis (PCA) can help us to visualise patterns in the genetic relationship between individuals in our cohort. We can also try to infer potential population structures. Later, we will also add some of the principal components computed here as covariates in the GWAS and RVAS models (this will be explained in due time).
+
+PLINK can compute the PCA for us with the `--pca` option. This will generate the `.eigenval` and `.eigenvec` files, containing the eigen values and the eigen vectors (= principal components) respectively.
+
+```shell
+plink --bfile gwas_filtered --pca --out pca
+```
+
+We will use a custom R script to plot the PCA from the `.eigenvec` file:
+
+```shell
+Rscript ../scripts/PCA.R -i pca.eigenvec -f gwas_filtered.fam -b TRUE -o PCA
+```
+
+![PCA_plot](./images/PCA.png "PCA produced with plink.")
+
+**Q1.8:** Interpret the PCA plot. Why are we seeing two distinct groups? How is the distribution of the phenotypes between the groups? How could that affect our GWAS analysis?
 
 ## Minor Allele Frequencies
 
-The Minor Allele Frequency (MAF) of a SNP is the frequency at which the second most common allele occurs in a given population. Some SNPs are very rare, and even if associated with the trait, can not be detected using a GWAS. Indeed, we need enough statistical power, and thus enough carriers of each allele, in order to detect an association.
+The Minor Allele Frequency (MAF) of a SNP is the frequency at which the 2nd most common allele occurs in a given population. Some SNPs are very rare, and even if associated with the trait, can not be detected using a GWAS. Indeed, we lack the statistical power (= enough carriers of each allele) to detect such an association. Since these SNPs will probably not be informative, we will remove them in order to reduce the amount of tests performed in the GWAS. Remember that we are doing one test per variant, so the less variants we have, the less correction we will need to apply to the p-values.
 
-In order to reduce the number of tests 
+Here, we will remove variants with a MAF < 0.01. Write the command to filter the dataset, you can use the `--maf 0.01` option and name the output files `gwas_final`.
 
-Some SNPs are very rare in the population. Even if these SNPs are associated with the
-tested trait and given the high number of tests having to be performed in a GWAS analysis,
-we probably would not have the statistical power to detect such associations. We choose to
-remove all SNPs having a Minor Allele Frequency less than 0.05. Perform this filtering in
-chr15_F3 dataset by using the --maf 0.01 option. The output dataset will be called
-chr15_F4 and will be in binary format. How many SNPs are filtered this way ?
+ <details>
+    <summary> Answer </summary>
+
+```shell
+plink --bfile gwas_filtered --maf 0.01 --make-bed --out gwas_final
+```
+
+ </details>
+
+**Q1.9:** How many individuals and SNPs are remaining in the final dataset? Compare this to the original file.
+
+<details>
+    <summary> Answer </summary> 
+
+> 87 people and 198,132 variants are remaining in the final dataset. The original dataset contained 90 people and 261,184 variants. The removal of variants is necessary to ensure that what we are capturing in the GWAS is not spurious / due to noise.
+
+</details>
+
+> [!NOTE]
+> In this practical, we illustrate the GWAS steps using a small dataset. A real GWAS would include thousands, or 100 of thousands of participants and millions of variants.
+
+Well done! You know have a curated dataset and are ready to start the [GWAS analysis](../2_GWAS/).
