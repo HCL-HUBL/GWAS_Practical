@@ -11,9 +11,9 @@ This practical is composed of three parts:
 
 ## The Dataset:
 
-In this practical, we will perform a GWAS and RVAS analysis using plink and R, on a [dataset](./data/) consisting of 90 Asian HapMap individuals (Han Chinese from Beijing and Japanese from Tokyo) from the actual HapMap data. It contains a subset of ~250,000 SNPs from the Affymetrix 500K SNP Array product and with a simulated disease phenotype (data from: https://www.cog-genomics.org/plink/1.9/resources).
+In this practical, we will perform a GWAS and RVAS analysis using PLINK and R, on a [dataset](./data/) consisting of 90 Asian HapMap individuals (Han Chinese from Beijing and Japanese from Tokyo) from the actual HapMap data. It contains a subset of ~250,000 SNPs from the Affymetrix 500K SNP Array product and with a simulated disease phenotype (data from: https://www.cog-genomics.org/plink/1.9/resources).
 
-We also added simulated rare SNPs on specific genes to perform Rare Variants Association Studies (RVAS).
+SNPs were added *in-silico* to specific genes to create a signal for the Rare Variants Association Study (RVAS).
 
 ## Starting point:
 

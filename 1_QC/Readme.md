@@ -18,7 +18,7 @@ The data for this practical is available under [./data/](../data/) and contains:
 
 ### The plink format:
 
-To perform a GWAS we need the phenotype of each individual and their genotype at each marker. To perform the quality control steps, we will use the [PLINK](https://www.cog-genomics.org/plink/1.9/) software, which read the required information from coupled .bim / .bed and .fam files.
+To perform a GWAS we need the phenotype of each individual and their genotype at each marker (usually Single Nucleotide Polymorphisms (SNPs)). To perform the quality control steps, we will use the [PLINK](https://www.cog-genomics.org/plink/1.9/) software, which read the required information from coupled .bim / .bed and .fam files:
 
  - The [.bim](https://www.cog-genomics.org/plink/1.9/formats#bim) file lists all the genotyped variants (position and alleles):
   
@@ -93,7 +93,7 @@ plink --bfile gwas --missing --out gwas_missing
 
 ## Missing data
 
-The robustness of any result obtained with a GWAS depends heavily on the quality of the input data. This is why it is necessary to assess and filter the input data before doing any association tests. Usually individuals and variants with >5% missing data are removed from the dataset. This threshold can be adapted to your dataset (higher to keep more individuals, lower to be stricter). In PLINK, this can be done using the `--geno` and `--mind` options to filter variants and individuals respectively. For example to remove variants with >5% missing data, we can write:
+The robustness of any result obtained with a GWAS depends heavily on the quality of the input data. This is why it is necessary to assess and filter the input data before doing any association tests. Usually variants and individuals with >5% missing data are removed from the dataset. This threshold can be adapted to your dataset (higher to keep more data, lower to be stricter). In PLINK, this can be done using the `--geno` and `--mind` options to filter variants and individuals respectively. For example to remove variants with >5% missing data, we can write:
 
 ```shell
 plink --bfile gwas --geno 0.05 --make-bed --out gwas_filtered
@@ -124,7 +124,7 @@ plink --bfile gwas_filtered --mind 0.05 --make-bed --out gwas_filtered
 Missing data can arise due to different factors, including poor quality libraries, errors during genotyping etc...
 
 > [!TIP]
-> You can manually remove individuals and variants with the `--extract` and `--exclude` options. This can be useful if some individuals removed consent to participate in the study or if some exclusions criterias are met.
+> You can manually remove individuals and variants with the `--extract` and `--exclude` options. This can be useful if some individuals removed consent to participate in the study or if some exclusion criterias are met.
 
 ## Hardy-Weinberg
 
@@ -260,7 +260,7 @@ plink --bfile gwas_filtered --maf 0.01 --make-bed --out gwas_final
 <details>
     <summary> Answer </summary> 
 
-> 87 people and 198,132 variants are remaining in the final dataset. The original dataset contained 90 people and 261,184 variants. The removal of variants is necessary to ensure that what we are capturing in the GWAS is not spurious / due to noise.
+> 87 people and 198,132 variants are remaining in the final dataset. The original dataset contained 90 people and 261,184 variants. The removal of variants and individuals from the analysis is necessary to ensure that what we are capturing in the GWAS is not biased / due to noise.
 
 </details>
 
