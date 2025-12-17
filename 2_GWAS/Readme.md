@@ -106,10 +106,10 @@ adj_gwas_results <- adj_gwas_results[order(adj_gwas_results$P),] # Ordering the 
 <details>
     <summary> Answer </summary> 
 
-> rs11204005 has an AF of 0.59 in Japanese, 0.58 in Han Chinese
-> rs2460338 has an AF of 0.52 in Japanese, 0.60 in Han Chinese
-> rs1052586 has an AF of 0.56 in Japanese, 0.57 in Han Chinese
-> These SNPs are not likely to be incluenced by population structure and could be true positive hits!
+> - rs11204005 has an AF of 0.59 in Japanese, 0.58 in Han Chinese
+> - rs2460338 has an AF of 0.52 in Japanese, 0.60 in Han Chinese
+> - rs1052586 has an AF of 0.56 in Japanese, 0.57 in Han Chinese
+> - These SNPs are not likely to be incluenced by population structure and could be true positive hits!
 
 </details>
 
