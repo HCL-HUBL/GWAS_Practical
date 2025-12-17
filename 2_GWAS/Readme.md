@@ -51,10 +51,10 @@ gwas_results <- gwas_results[order(gwas_results$P),] # Ordering the results by P
 <details>
     <summary> Answer </summary> 
 
-> Our top hit, rs2513514 has an AF of 0.48 in Japanese but only 0.31 in Han Chinese. 
-> The 2nd hit rs1548299 has an AF of 0.89 in Japanese but only 0.71 in Han Chinese. 
-> Again for the 3rd hit: rs2508756 has an AF of 0.50 in Japanese, and 0.33 in Chinese. 
-> Could our results be biased by ancestry?
+> - Our top hit, rs2513514 has an AF of 0.48 in Japanese but only 0.31 in Han Chinese. 
+> - The 2nd hit rs1548299 has an AF of 0.89 in Japanese but only 0.71 in Han Chinese. 
+> - Again for the 3rd hit: rs2508756 has an AF of 0.50 in Japanese, and 0.33 in Chinese. 
+> - Could our results be biased by ancestry?
 
 </details>
 
@@ -95,9 +95,9 @@ adj_gwas_results <- adj_gwas_results[order(adj_gwas_results$P),] # Ordering the 
 <details>
     <summary> Answer </summary> 
 
-> rs2513514 7.76e-04 vs 6.29e-06
-> rs1548299 1.90e-02 vs 8.75e-06
-> rs2508756 1.02e-03 vs 1.67e-05
+> - rs2513514 7.76e-04 vs 6.29e-06
+> - rs1548299 1.90e-02 vs 8.75e-06
+> - rs2508756 1.02e-03 vs 1.67e-05
 
 </details>
 
