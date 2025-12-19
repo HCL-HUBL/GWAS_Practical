@@ -87,7 +87,7 @@ plink --bfile gwas --missing --out gwas_missing
 <details>
     <summary> Answer </summary> 
     
-> The dataset contains 90 people (45 males, 45 females) and 261,184 variants. 
+> The dataset contains 90 people (45 males, 45 females) and 261,191 variants. 
 
 </details>
 
@@ -117,7 +117,7 @@ plink --bfile gwas_filtered --mind 0.05 --make-bed --out gwas_filtered
 <details>
     <summary> Answer </summary> 
 
-> 258,118 variants and 89 people are left.
+> 258,125 variants and 89 people are left.
 
 </details>
 
@@ -260,7 +260,7 @@ plink --bfile gwas_filtered --maf 0.01 --make-bed --out gwas_final
 <details>
     <summary> Answer </summary> 
 
-> 87 people and 198,132 variants are remaining in the final dataset. The original dataset contained 90 people and 261,184 variants. The removal of variants and individuals from the analysis is necessary to ensure that what we are capturing in the GWAS is not biased / due to noise.
+> 87 people and 198,139 variants are remaining in the final dataset. The original dataset contained 90 people and 261,184 variants. The removal of variants and individuals from the analysis is necessary to ensure that what we are capturing in the GWAS is not biased / due to noise.
 
 </details>
 

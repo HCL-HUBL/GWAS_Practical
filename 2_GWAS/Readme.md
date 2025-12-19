@@ -106,9 +106,10 @@ adj_gwas_results <- adj_gwas_results[order(adj_gwas_results$P),] # Ordering the 
 <details>
     <summary> Answer </summary> 
 
+> - rs554297 has an AF of 0.96 in Japanese, 0.98 in Han Chinese
+> - rs7840927 has an AF of 0.81 in Japanese, 0.89 in Han Chinese
 > - rs11204005 has an AF of 0.59 in Japanese, 0.58 in Han Chinese
 > - rs2460338 has an AF of 0.52 in Japanese, 0.60 in Han Chinese
-> - rs1052586 has an AF of 0.56 in Japanese, 0.57 in Han Chinese
 > - These SNPs are not likely to be incluenced by population structure and could be true positive hits!
 
 </details>
@@ -138,6 +139,9 @@ Good! We now have regions significantly associated with our trait. However, we c
  - Validate the results using an independent cohort: with less individuals, but testing only the significant regions. Since we are doing less tests, we do not need to correct as much. If our locus is still significant, it is robust evidence of the association between our locus and the trait.
  - Doing a regional plot: plotting a zoomed version of our significant locus. We can check the LD pattern between the SNPs in that region and look at the neighboring genes.
  - Experimentally confirm the effect of the gene on our trait (With CRISPR knockout for example).
+
+> [!WARNING]
+> Association studies can find **associations** between alleles and a trait. However, the **causal** link between each allele and the trait cannot be inferred directly. The causal SNP might be a SNP in LD with the significant allele, or there might be an indirect effect of the allele on the trait, involving other genes.
 
 ## Pitfalls and other caveats:
 
