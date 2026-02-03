@@ -2,7 +2,13 @@
 
 ## Introduction:
 
-A Genome Wide Association Study (GWAS) aims at discovering genomic alleles which are associated to a phenotypic trait of interest. The main rationale behind a GWAS is to compare SNPs frequencies between groups of people harboring the trait or not.
+A Genome Wide Association Study (GWAS) aims at discovering genetic markers, often Single Nucleotide Polymorphisms (SNPs), which are associated with a phenotypic trait of interest, for example a disease. The rationale behind a GWAS depends on the type of trait under study:
+
+ - For *binary* phenotypes: the allele frequencies of each SNP are compared between people harbouring the trait those not harbouring the trait. Since we are assuming a random distribution of alleles in the population, large differences in frequencies could signify an association between the SNP and the trait.
+
+ - For *continuous* phenotypes: the distribution of the trait values are compared across individuals carrying different alleles at each SNP. Since we assume alleles are randomly distributed in the population, systematic differences in the average trait value between genotypes can indicate an association between the SNP and the trait.
+
+For both, we will obtain a **p-value** for each SNP, representing the strength of the association between the SNP and the trait. A lower p-value indicating a stronger association. Please note that a low p-value does not infer a large **effect size**, which is the impact of the SNP on the trait, represented as an *odd ratio* for binary trait and as a *beta* value for continuous trait. Also note that the effect size can be positive or negative, indicating the direction of the allele impact on the trait (eg: protective of deleterious).
 
 This practical is composed of three parts:
  - [Quality Control on the input data (QC)](1_QC/)

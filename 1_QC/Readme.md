@@ -18,7 +18,7 @@ The data for this practical is available under [./data/](../data/) and contains:
 
 ### The plink format:
 
-To perform a GWAS we need the phenotype of each individual and their genotype at each marker (usually Single Nucleotide Polymorphisms (SNPs)). To perform the quality control steps, we will use the [PLINK](https://www.cog-genomics.org/plink/1.9/) software, which read the required information from coupled .bim / .bed and .fam files:
+To perform a GWAS we need the phenotype of each individual and their genotype at each marker, usually Single Nucleotide Polymorphisms (SNPs). To perform the quality control steps, we will use the [PLINK](https://www.cog-genomics.org/plink/1.9/) software, which read the required information from coupled .bim / .bed and .fam files:
 
  - The [.bim](https://www.cog-genomics.org/plink/1.9/formats#bim) file lists all the genotyped variants (position and alleles):
   
@@ -45,12 +45,12 @@ To perform a GWAS we need the phenotype of each individual and their genotype at
 
  - The [.bed](https://www.cog-genomics.org/plink/1.9/formats#bed) file represents the genotype calls. Must be accompanied by a .bim and .fam file.
 
-> [!NOTE]  
+> [!NOTE]
 > More information about the formats can be found in the [PLINK documentation](https://www.cog-genomics.org/plink/1.9/formats).
 
 **Questions**: 
 
-**Q1.1:** Have a look in chr15.bim. At which genomic position is located SNP rs4932079? What are two the observed alleles for this SNP is this dataset?
+**Q1.1:** Have a look in chr15.bim. At which genomic position is located SNP rs4932079? What are the two observed alleles for this SNP is this dataset?
 
 <details>
     <summary> Answer </summary> 
@@ -64,7 +64,7 @@ To perform a GWAS we need the phenotype of each individual and their genotype at
 <details>
     <summary> Answer </summary> 
     
-> NA18547 is a female (5th column = 2)
+> NA18547 is a female (5th column = 2).
 
 </details>
 
@@ -201,7 +201,7 @@ plink --bfile gwas_filtered --keep gwas_filtered.het.valides --make-bed --out gw
 
 ## Kinship
 
-One of the assumptions in a GWAS is that the observations (individuals) are independant. If two individuals are from the same family, they share the same genetics but also a similar environment, which can lead to spurious associations. If family information is not present, we can use the Identity-By-Descent (IBD) to estimate the relatedness between pairs of individuals. PLINK returns the IBD as a `PI_HAT` value:
+An important GWAS assumption is that the observations (individuals) are independant. Remember that we are assuming that alleles are randomly distributed in the population, and related individuals share more SNPs that expected by chance. Moreover, if two individuals are from the same family, they share similar genetics but also a similar environment, which can lead to spurious associations if the environment has an impact on the trait. We are going to remove individuals in our cohort which are at least second-degree relatives. If family information is not present in the dataset, we can use the Identity-By-Descent (IBD) to estimate the relatedness between pairs of individuals. PLINK returns the IBD as a `PI_HAT` value:
 
 > PI_HAT = P(IBD=2) + 0.5*P(IBD=1) 
 
@@ -209,10 +209,10 @@ Where:
  - *P(IBD=2)* is the probability that 2 individuals share 2 alleles IBD.
  - *P(IBD=1)* is the probability that 2 individuals share 1 allele IBD.
 
-Use PLINK to list individuals having PI-HAT > 0.3. A `related.genome` file containing interbreeding statistics for each pair of individuals with Pi-HAT > 0.3 is created. Please note that the PI_HAT calculation is not LD-aware, luckily, we can reuse the pruned list of variants generated during the previous step `gwas_filtered.prune.in`:
+Use `--genome` to list individuals having PI-HAT > 0.3. A `related.genome` file containing interbreeding statistics for each pair of individuals with Pi-HAT > 0.25 is created. Please note that the PI_HAT calculation is not LD-aware, luckily, we can reuse the pruned list of variants generated during the previous step `gwas_filtered.prune.in`:
 
 ```shell
-plink --bfile gwas_filtered --extract gwas_filtered.prune.in --genome --out related --min 0.3
+plink --bfile gwas_filtered --extract gwas_filtered.prune.in --genome --out related --min 0.25
 ```
 
 The file is empty! We do not have close relatives in the dataset (if you have time you can try to run the same command on the raw dataset: `gwas`). If we had some relatives, we could use the `--remove related.genome` command to remove individuals listed in the first 2 columns of the `related.genome` file (family-id and individual-id).
