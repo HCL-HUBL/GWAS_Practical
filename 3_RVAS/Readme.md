@@ -1,6 +1,6 @@
 # RVAS (Rare Variants Association Studies)
 
-In the last section, we found some variants associated with our trait of interest. However, GWAS, by design, can only find "common" SNPs in our population, as it needs enough carriers to reach statistical significance. We know that rare variants can have a high impact on diseases. For example, a **Mendelian trait** is a trait influenced by a single gene. A known example of Mendelian disease is Huntington disease, often caused by an inherited mutation in the *HHT* gene.
+In the last section, we found some variants associated with our trait of interest. However GWAS, by design, can only find "common" SNPs in our population, as it needs enough carriers of each allele to reach statistical significance. We know that rare variants can have a high impact on diseases. For example, a **Mendelian trait** is a trait influenced by a single gene. A known example of Mendelian disease is Huntington disease, often caused by an inherited mutation in the *HHT* gene.
 
 > [!NOTE] 
 > The definition of a rare variant differs between studies. Most of the time, variants with a Minor Allele Frequency (MAF) < 0.01 are considered rare.
@@ -33,4 +33,20 @@ Here, we will use
 
 ## Preparation of the input data:
 
-We will start from the quality controlled dataset, just before we removed variants with a MAF < 0.01.
+We will start from the quality controlled dataset, just before we removed variants with a MAF < 0.01. This time we will remove variants with a MAF > 0.01, [--max-maf](https://www.cog-genomics.org/plink/1.9/filter#maf) imposes a upper MAF bound for variants.
+
+```shell
+plink --bfile gwas_filtered --max-maf 0.01 --make-bed --out gwas_final
+```
+
+## Creation of the set test
+
+In PLINK, burden tests are performed by grouping variants into predefined sets (such as genes), collapsing them into a single genetic score per individual, and testing whether this score is associated with the phenotype using linear or logistic regression. First, we are going to generate the set test:
+
+
+## The association Test:
+
+PLINK collapses variants within each set into a single score per individual.
+
+> [!Note]
+> This is a simple burden test, it will only detect associations if all variants affect the trait in the same direction. This lose power if variants in a gene have opposite effects, or many variants are neutral. Other models and tools are available for more complex associations, see the Table at the beginning of this section for more details.

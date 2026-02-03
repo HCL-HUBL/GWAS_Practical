@@ -76,7 +76,7 @@ PLINK is a command-line standalone software dedicated to GWAS analyses. You will
 plink --help
 ```
 
-For each of its function, PLINK will print a summary of data and actions in the console. We can ask information about missing data in our files using the `--missing` argument. Do not forget to indicate your input dataset using `--bfile` and an output name with `--out`:
+For each of its function, PLINK will print a summary of data and actions in the console. We can ask information about missing data in our files using the [--missing](https://www.cog-genomics.org/plink/1.9/basic_stats#missing) argument. Do not forget to indicate your input dataset using `--bfile` and an output name with `--out`:
 
 ```shell
 plink --bfile gwas --missing --out gwas_missing
@@ -93,7 +93,7 @@ plink --bfile gwas --missing --out gwas_missing
 
 ## Missing data
 
-The robustness of any result obtained with a GWAS depends heavily on the quality of the input data. This is why it is necessary to assess and filter the input data before doing any association tests. Usually variants and individuals with >5% missing data are removed from the dataset. This threshold can be adapted to your dataset (higher to keep more data, lower to be stricter). In PLINK, this can be done using the `--geno` and `--mind` options to filter variants and individuals respectively. For example to remove variants with >5% missing data, we can write:
+The robustness of any result obtained with a GWAS depends heavily on the quality of the input data. This is why it is necessary to assess and filter the input data before doing any association tests. Usually variants and individuals with >5% missing data are removed from the dataset. This threshold can be adapted to your dataset (higher to keep more data, lower to be stricter). In PLINK, this can be done using the [--geno](https://www.cog-genomics.org/plink/1.9/filter#missing) and [--mind](https://www.cog-genomics.org/plink/1.9/filter#missing) options to filter variants and individuals respectively. For example to remove variants with >5% missing data, we can write:
 
 ```shell
 plink --bfile gwas --geno 0.05 --make-bed --out gwas_filtered
@@ -124,13 +124,13 @@ plink --bfile gwas_filtered --mind 0.05 --make-bed --out gwas_filtered
 Missing data can arise due to different factors, including poor quality libraries, errors during genotyping etc...
 
 > [!TIP]
-> You can manually remove individuals and variants with the `--extract` and `--exclude` options. This can be useful if some individuals removed consent to participate in the study or if some exclusion criterias are met.
+> You can manually select or remove individuals and variants with the [--keep / --remove](https://www.cog-genomics.org/plink/1.9/filter#indiv) and [--extract / --exclude](https://www.cog-genomics.org/plink/1.9/filter#snp) options. This can be useful if some individuals removed consent to participate in the study or if some exclusion criterias are met.
 
 ## Hardy-Weinberg
 
 Hardy-Weinberg Equilibrium (HWE) is a consequence of random mating within a population in the absence of mutation, migration, natural selection, or random drift. A significant departure from HWE for a SNP in a sample may indicate non-random mating and possibly population stratification, non-random genotyping error, or missing genotype data in which one allele or genotype is more often misclassified or missing than the other. Including such SNPs can result in spurious associations.
 
-The `--hwe <p-value>` option in PLINK filters out all variants which have Hardy-Weinberg equilibrium exact test p-value below the provided threshold. This can be used to filter out genotyping errors, which can result in false positive hits. An extreme p-value (ef: 1e-50) can be used to avoid filtering out actual variants:
+The [--hwe <p-value>](https://www.cog-genomics.org/plink/1.9/filter#hwe) option in PLINK filters out all variants which have Hardy-Weinberg equilibrium exact test p-value below the provided threshold. This can be used to filter out genotyping errors, which can result in false positive hits. An extreme p-value (ef: 1e-50) can be used to avoid filtering out actual variants:
 
 ```shell
 plink --bfile gwas_filtered --hwe 1e-50 --make-bed --out gwas_filtered
@@ -161,7 +161,7 @@ Individuals with extreme heterozygosity levels are usually removed from GWAS ana
 > [!Note]
 > The F coefficient is inversely correlated with heterozygosity (the lower the heterozygosity, the larger the F value).
 
-We need to generate a file with the F coefficients using PLINK. This can be done using the `--het` option, but it does not take Linkage Disequilibrium (LD) into account, so we will generated a list of independant variants first:
+We need to generate a file with the F coefficients using PLINK. This can be done using the [--het](https://www.cog-genomics.org/plink/1.9/basic_stats#ibc) option, but it does not take Linkage Disequilibrium (LD) into account, so we will generated a list of independant variants first:
 
 ```shell
 plink --bfile gwas_filtered --indep-pairwise 200 50 0.25 --out gwas_filtered
@@ -209,7 +209,7 @@ Where:
  - *P(IBD=2)* is the probability that 2 individuals share 2 alleles IBD.
  - *P(IBD=1)* is the probability that 2 individuals share 1 allele IBD.
 
-Use `--genome` to list individuals having PI-HAT > 0.3. A `related.genome` file containing interbreeding statistics for each pair of individuals with Pi-HAT > 0.25 is created. Please note that the PI_HAT calculation is not LD-aware, luckily, we can reuse the pruned list of variants generated during the previous step `gwas_filtered.prune.in`:
+Use [--genome](https://www.cog-genomics.org/plink/1.9/ibd) to list individuals having PI-HAT > 0.3. A `related.genome` file containing interbreeding statistics for each pair of individuals with Pi-HAT > 0.25 is created. Please note that the PI_HAT calculation is not LD-aware, luckily, we can reuse the pruned list of variants generated during the previous step `gwas_filtered.prune.in`:
 
 ```shell
 plink --bfile gwas_filtered --extract gwas_filtered.prune.in --genome --out related --min 0.25
@@ -218,13 +218,13 @@ plink --bfile gwas_filtered --extract gwas_filtered.prune.in --genome --out rela
 The file is empty! We do not have close relatives in the dataset (if you have time you can try to run the same command on the raw dataset: `gwas`). If we had some relatives, we could use the `--remove related.genome` command to remove individuals listed in the first 2 columns of the `related.genome` file (family-id and individual-id).
 
 > [!NOTE]
-> PLINK's `--genome` command is not very accurate. Its accuracy is sufficient for this pratical, but dedicated tools, such as [KING](https://academic.oup.com/bioinformatics/article/26/22/2867/228512) can be used instead.
+> PLINK's [--genome](https://www.cog-genomics.org/plink/1.9/ibd) command is not very accurate. Its accuracy is sufficient for this pratical, but dedicated tools, such as [KING](https://academic.oup.com/bioinformatics/article/26/22/2867/228512) can be used instead.
 
 ## Principal Components Analysis
 
 A Principal Component Analysis (PCA) can help us to visualise patterns in the genetic relationship between individuals in our cohort. We can also try to infer potential population structures. Later, we will also add some of the principal components computed here as covariates in the GWAS and RVAS models (this will be explained in due time).
 
-PLINK can compute the PCA for us with the `--pca` option. This will generate the `.eigenval` and `.eigenvec` files, containing the eigen values and the eigen vectors (= principal components) respectively.
+PLINK can compute the PCA for us with the [--pca](https://www.cog-genomics.org/plink/1.9/strat#pca) option. This will generate the `.eigenval` and `.eigenvec` files, containing the eigen values and the eigen vectors (= principal components) respectively.
 
 ```shell
 plink --bfile gwas_filtered --pca --out pca
@@ -244,7 +244,7 @@ Rscript ../scripts/PCA.R -i pca.eigenvec -f gwas_filtered.fam -b TRUE -o PCA
 
 The Minor Allele Frequency (MAF) of a SNP is the frequency at which the 2nd most common allele occurs in a given population. Some SNPs are very rare, and even if associated with the trait, can not be detected using a GWAS. Indeed, we lack the statistical power (= enough carriers of each allele) to detect such an association. Since these SNPs will probably not be informative, we will remove them in order to reduce the amount of tests performed in the GWAS. Remember that we are doing one test per variant, so the less variants we have, the less correction we will need to apply to the p-values.
 
-Here, we will remove variants with a MAF < 0.01. Write the command to filter the dataset, you can use the `--maf 0.01` option and name the output files `gwas_final`.
+Here, we will remove variants with a MAF < 0.01. Write the command to filter the dataset, you can use the [--maf 0.01](https://www.cog-genomics.org/plink/1.9/filter#maf) option and name the output files `gwas_final`.
 
  <details>
     <summary> Answer </summary>
