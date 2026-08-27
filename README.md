@@ -2,22 +2,22 @@
 
 ## Introduction:
 
-A Genome Wide Association Study (GWAS) aims at discovering genetic markers, often Single Nucleotide Polymorphisms (SNPs), which are associated with a phenotypic trait of interest, for example a disease. The rationale behind a GWAS depends on the type of trait under study:
+A Genome Wide Association Study (GWAS) aims to identify genetic markers, often Single Nucleotide Polymorphisms (SNPs), that are associated with a phenotypic trait of interest, for example a disease. The rationale behind a GWAS depends on the type of trait under study:
 
- - For *binary* phenotypes: the allele frequencies of each SNP are compared between people harbouring the trait those not harbouring the trait. Since we are assuming a random distribution of alleles in the population, large differences in frequencies could signify an association between the SNP and the trait.
+ - For *binary* phenotypes: the allele frequencies of each SNP are compared between individuals harbouring the trait those who do not. Since we are assuming a random distribution of alleles in the population, large differences in frequencies may indicate an association between the SNP and the trait.
 
- - For *continuous* phenotypes: the distribution of the trait values are compared across individuals carrying different alleles at each SNP. Since we assume alleles are randomly distributed in the population, systematic differences in the average trait value between genotypes can indicate an association between the SNP and the trait.
+ - For *continuous* phenotypes: the distribution of trait values is compared among individuals carrying different alleles at each SNP. Assuming alleles are randomly distributed in the population, systematic differences in the average trait value between genotypes may indicate an association between the SNP and the trait.
 
-For both, we will obtain a **p-value** for each SNP, representing the strength of the association between the SNP and the trait. A lower p-value indicating a stronger association. Please note that a low p-value does not infer a large **effect size**, which is the impact of the SNP on the trait, represented as an *odd ratio* for binary trait and as a *beta* value for continuous trait. Also note that the effect size can be positive or negative, indicating the direction of the allele impact on the trait (eg: protective of deleterious).
+In both cases, a **p-value** is obtained for each SNP, representing the strength of the association between the SNP and the trait. A lower p-value indicates a stronger association. Please note that a low p-value does not imply a large **effect size**, which measures the impact of the SNP on the trait. Effect size is represented as an *odds ratio* for binary traits and as a *beta value* for continuous traits. Note that the effect size also indicates the direction of the allele's impact on the trait (eg: protective of deleterious).
 
-This practical is composed of three parts:
+This practical contains three parts:
  - [Quality Control on the input data (QC)](1_QC/)
  - [Genome Wide Association Studies (GWAS)](2_GWAS/)
  - [Rare Variants Association Studies (RVAS)](3_RVAS/)
 
 ## The Dataset:
 
-In this practical, we will perform a GWAS and RVAS analysis using PLINK and R, on a [dataset](./data/) consisting of 90 Asian HapMap individuals (Han Chinese from Beijing and Japanese from Tokyo) from the actual HapMap data. It contains a subset of ~250,000 SNPs from the Affymetrix 500K SNP Array product and with a simulated disease phenotype (data from: https://www.cog-genomics.org/plink/1.9/resources).
+In this practical, we will perform GWAS and RVAS analyses using [PLINK](https://www.cog-genomics.org/plink/1.9/) and R, on a [dataset](./data/) consisting of 90 Asian HapMap individuals (Han Chinese from Beijing and Japanese from Tokyo) from the actual HapMap data. The dataset contains a subset of ~250,000 SNPs from the Affymetrix 500K SNP Array product and a simulated disease phenotype (data adapted from: https://www.cog-genomics.org/plink/1.9/resources).
 
 SNPs were added *in-silico* to specific genes to create a signal for the Rare Variants Association Study (RVAS).
 
@@ -27,7 +27,7 @@ We are starting with the [Quality Control steps](1_QC/).
 
 ## Further Ressources:
 
-The GWAS Catalog: https://www.ebi.ac.uk/gwas/ a repository of summary statistics from published GWAS.
+The GWAS Catalog: https://www.ebi.ac.uk/gwas/ a large repository of summary statistics from published GWAS.
 
 A non-comprehensive list of interesting papers regarding GWAS and RVAS analyses:
 
