@@ -14,7 +14,7 @@ In this pratical the quality control steps will be shared between the common (GW
 The data for this practical is available under [./data/](../data/) and contains:
  - *gwas.{bim,bed,fam}*: genotyping data in the [plink](https://www.cog-genomics.org/plink/1.9/) format
  - *gwas.covars*: a file of covariates
- - *regions.bed*: a file listing regions to analyse
+ - *regions.bed*: a file listing the genomic regions to analyse
 
 ### The plink format:
 
@@ -43,7 +43,16 @@ To perform a GWAS we need the phenotype of each individual and their genotype at
     | CH18532 | NA18532 | 0 | 0 | 2 | 1 |
     | CH18537 | NA18537 | 0 | 0 | 2 | 2 |
 
- - The [.bed](https://www.cog-genomics.org/plink/1.9/formats#bed) file represents the genotype calls. Must be accompanied by a .bim and .fam file.
+ - The [.bed](https://www.cog-genomics.org/plink/1.9/formats#bed) file represents the genotype calls in binary format. Each genotype is encoded using 2 bits per individual per SNP, with the following conventions:
+
+    | Code | Meaning |
+    | --- | --- |
+    | 00 | Homozygous for the first allele (e.g., AA) |
+    | 01 | Heterozygous (e.g., AB) |
+    | 10 | Missing genotype |
+    | 11 | Homozygous for the second allele (e.g., BB) |
+
+The alleles are ordered according to the [.bim](https://www.cog-genomics.org/plink/1.9/formats#bim) file, where the first allele is the reference allele and the second is the alternate allele. The individuals are ordered as specified in the [.fam](https://www.cog-genomics.org/plink/1.9/formats#fam) file.
 
 > [!NOTE]
 > More information about the formats can be found in the [PLINK documentation](https://www.cog-genomics.org/plink/1.9/formats).
@@ -76,7 +85,7 @@ PLINK is a command-line standalone software dedicated to GWAS analyses. You will
 plink --help
 ```
 
-For each of its function, PLINK will print a summary of data and actions in the console. We can ask information about missing data in our files using the [--missing](https://www.cog-genomics.org/plink/1.9/basic_stats#missing) argument. Do not forget to indicate your input dataset using `--bfile` and an output name with `--out`:
+For each of its function, PLINK will print a summary of data and actions in the console. We can get information about missing data in our files using the [--missing](https://www.cog-genomics.org/plink/1.9/basic_stats#missing) option. Do not forget to indicate your input dataset using `--bfile` and an output name with `--out`:
 
 ```shell
 plink --bfile gwas --missing --out gwas_missing
@@ -128,7 +137,7 @@ Missing data can arise due to different factors, including poor quality librarie
 
 ## Hardy-Weinberg
 
-Hardy-Weinberg Equilibrium (HWE) is a consequence of random mating within a population in the absence of mutation, migration, natural selection, or random drift. A significant departure from HWE for a SNP in a sample may indicate non-random mating and possibly population stratification, non-random genotyping error, or missing genotype data in which one allele or genotype is more often misclassified or missing than the other. Including such SNPs can result in spurious associations.
+The Hardy-Weinberg Equilibrium (HWE) is a consequence of random mating within a population in the absence of mutation, migration, natural selection, or random drift. A significant departure from HWE for a SNP in a sample may indicate non-random mating and possibly population stratification, non-random genotyping error, or missing genotype data in which one allele or genotype is more often misclassified or missing than the other. Including such SNPs can result in spurious associations.
 
 The [--hwe <p-value>](https://www.cog-genomics.org/plink/1.9/filter#hwe) option in PLINK filters out all variants which have Hardy-Weinberg equilibrium exact test p-value below the provided threshold. This can be used to filter out genotyping errors, which can result in false positive hits. An extreme p-value (ef: 1e-50) can be used to avoid filtering out actual variants:
 
@@ -150,24 +159,26 @@ plink --bfile gwas_filtered --hwe 1e-50 --make-bed --out gwas_filtered
  <details>
     <summary> Answer </summary> 
     
-> In cases, we can expect some variants to be not constrainted by natural selection, which is one of the assumptions of the HWE equation.
+> In cases, we can expect some variants not to be constrained by natural selection, which is one of the assumptions of the HWE equation.
 
 </details>
 
 ## Heterozygosity
 
-Individuals with extreme heterozygosity levels are usually removed from GWAS analyses, to avoid biases due to consanguinity (low het. levels) and library preparation (high het. levels). We will use the F coefficient, which reports the observed and expected autosomal homozygous genotype counts for each sample.
+Individuals with extreme heterozygosity levels are usually removed from GWAS analyses, to avoid biases due to consanguinity (low heterozygosity levels) and library preparation (high heterozygosity levels). To measure the heterozygosity levels, we will compute the F coefficient, which reports the observed and expected autosomal homozygous genotype counts for each sample.
 
 > [!Note]
 > The F coefficient is inversely correlated with heterozygosity (the lower the heterozygosity, the larger the F value).
 
-We need to generate a file with the F coefficients using PLINK. This can be done using the [--het](https://www.cog-genomics.org/plink/1.9/basic_stats#ibc) option, but it does not take Linkage Disequilibrium (LD) into account, so we will generated a list of independant variants first:
+Fortunately, PLINK can generate a file containing the F coefficient for each individual. This can be done using the [--het](https://www.cog-genomics.org/plink/1.9/basic_stats#ibc) option. However, it does not take Linkage Disequilibrium (LD) into account[^QC-1]. So, first we are going to generate a list of independant variants:
 
 ```shell
 plink --bfile gwas_filtered --indep-pairwise 200 50 0.25 --out gwas_filtered
 ```
 
-This will generate a list of pruned variants, using a window size of 200 variants, moving 50 variants at a time, removing pairs of variants with a LD r2 > 0.25. Now, we can use this list of independant variants to compute the F coefficients:
+This command will generate a list of independant variants, using a window size of 200 variants, moving 50 variants at a time, removing pairs of variants with a LD r2 > 0.25. This process is called *pruning* and is necessary to avoid biases due to correlated variants.
+
+Now, we can use this list of *pruned* variants to compute the F coefficients:
 
 **Q1.8:** Write the command to compute the F coefficient on the *gwas_filtered* dataset, using only the SNPs present in *gwas_filtered.pruned.in*.
 
@@ -191,7 +202,7 @@ The script also plots the distribution of the F coefficients in the cohort. A lo
 ![heterozygosity_plot](./images/heterozygosity_plot.png "Distribution of the F coefficients in the cohort. A low F value corresponds to a high heterozygosity and a high F value corresponds to a low heterozygosity and are plotted in red and blue respectively.")
 
 > [!WARNING]
-> If you have admixed samples in your cohort, they will have a very low F coefficient and you should consider wether or not to remove them from the analysis, as the high heterozygosity is then expected and is not reflective of the quality of the library.
+> If you have admixed samples in your cohort, they will naturally have a very low F coefficient. You should consider wether or not to remove them from the analysis, as the high heterozygosity is then expected and is not reflective of the quality of the library.
 
 We can then produce the final filtered file by only keeping the individuals which are passing the heterozygosity filter:
 
@@ -203,7 +214,7 @@ plink --bfile gwas_filtered --keep gwas_filtered.het.valides --make-bed --out gw
 
 An important GWAS assumption is that the observations (individuals) are independant. Remember that we are assuming that alleles are randomly distributed in the population, and related individuals share more SNPs that expected by chance. Moreover, if two individuals are from the same family, they share similar genetics but also a similar environment, which can lead to spurious associations if the environment has an impact on the trait. We are going to remove individuals in our cohort which are at least second-degree relatives. If family information is not present in the dataset, we can use the Identity-By-Descent (IBD) to estimate the relatedness between pairs of individuals. PLINK returns the IBD as a `PI_HAT` value:
 
-> PI_HAT = P(IBD=2) + 0.5*P(IBD=1) 
+$PI_HAT = P(IBD=2) + 0.5*P(IBD=1)$
 
 Where:
  - *P(IBD=2)* is the probability that 2 individuals share 2 alleles IBD.
@@ -224,7 +235,7 @@ The file is empty! We do not have close relatives in the dataset (if you have ti
 
 A Principal Component Analysis (PCA) can help us to visualise patterns in the genetic relationship between individuals in our cohort. We can also try to infer potential population structures. Later, we will also add some of the principal components computed here as covariates in the GWAS and RVAS models (this will be explained in due time).
 
-PLINK can compute the PCA for us with the [--pca](https://www.cog-genomics.org/plink/1.9/strat#pca) option. This will generate the `.eigenval` and `.eigenvec` files, containing the eigen values and the eigen vectors (= principal components) respectively.
+PLINK can compute the PCA for us with the [--pca](https://www.cog-genomics.org/plink/1.9/strat#pca) option. This will generate the `.eigenval` and `.eigenvec` files, containing the eigen values and the eigen vectors (=principal components) respectively.
 
 ```shell
 plink --bfile gwas_filtered --pca --out pca
@@ -242,7 +253,7 @@ Rscript ../scripts/PCA.R -i pca.eigenvec -f gwas_filtered.fam -b TRUE -o PCA
 
 ## Minor Allele Frequencies
 
-The Minor Allele Frequency (MAF) of a SNP is the frequency at which the 2nd most common allele occurs in a given population. Some SNPs are very rare, and even if associated with the trait, can not be detected using a GWAS. Indeed, we lack the statistical power (= enough carriers of each allele) to detect such an association. Since these SNPs will probably not be informative, we will remove them in order to reduce the amount of tests performed in the GWAS. Remember that we are doing one test per variant, so the less variants we have, the less correction we will need to apply to the p-values.
+The Minor Allele Frequency (MAF) of a SNP is the frequency at which the 2nd most common allele occurs in a given population. Some SNPs are very rare, and even if associated with the trait, can not be detected using a GWAS. Indeed, we lack the statistical power (=enough carriers of each allele) to detect such an association. Since these SNPs will probably not be informative, we will remove them in order to reduce the amount of tests performed in the GWAS. Remember that we are doing one test per variant, so the less variants we have, the less correction we will need to apply to the p-values.
 
 Here, we will remove variants with a MAF < 0.01. Write the command to filter the dataset, you can use the [--maf 0.01](https://www.cog-genomics.org/plink/1.9/filter#maf) option and name the output files `gwas_final`.
 
@@ -268,3 +279,6 @@ plink --bfile gwas_filtered --maf 0.01 --make-bed --out gwas_final
 > In this practical, we illustrate the GWAS steps using a small dataset. A real GWAS would include thousands, or 100 of thousands of participants and millions of variants.
 
 Well done! You know have a curated dataset and are ready to start the [GWAS analysis](../2_GWAS/).
+
+
+[^QC-1]: Linkage Disequilibrium refers to the non-random association of alleles at nearby loci on a chromosome, arising from their physical proximity and limited recombination.
