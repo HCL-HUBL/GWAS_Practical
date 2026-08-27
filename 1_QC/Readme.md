@@ -214,7 +214,7 @@ plink --bfile gwas_filtered --keep gwas_filtered.het.valides --make-bed --out gw
 
 An important GWAS assumption is that the observations (individuals) are independant. Remember that we are assuming that alleles are randomly distributed in the population, and related individuals share more SNPs that expected by chance. Moreover, if two individuals are from the same family, they share similar genetics but also a similar environment, which can lead to spurious associations if the environment has an impact on the trait. We are going to remove individuals in our cohort which are at least second-degree relatives. If family information is not present in the dataset, we can use the Identity-By-Descent (IBD) to estimate the relatedness between pairs of individuals. PLINK returns the IBD as a `PI_HAT` value:
 
-$PI_HAT = P(IBD=2) + 0.5*P(IBD=1)$
+$PI\_HAT = P(IBD=2) + 0.5*P(IBD=1)$
 
 Where:
  - *P(IBD=2)* is the probability that 2 individuals share 2 alleles IBD.
