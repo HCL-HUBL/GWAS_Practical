@@ -88,7 +88,8 @@ plink --help
 For each of its function, PLINK will print a summary of data and actions in the console. We can get information about missing data in our files using the [--missing](https://www.cog-genomics.org/plink/1.9/basic_stats#missing) option. Do not forget to indicate your input dataset using `--bfile` and an output name with `--out`:
 
 ```shell
-plink --bfile gwas --missing --out gwas_missing
+mkdir QC/
+plink --bfile ./data/gwas --missing --out QC/gwas_missing
 ```
 
 **Q1.3:** How many individuals contains this dataset ? How many males/females? How many variants?
@@ -105,7 +106,7 @@ plink --bfile gwas --missing --out gwas_missing
 The robustness of any result obtained with a GWAS depends heavily on the quality of the input data. This is why it is necessary to assess and filter the input data before doing any association tests. Usually variants and individuals with >5% missing data are removed from the dataset. This threshold can be adapted to your dataset (higher to keep more data, lower to be stricter). In PLINK, this can be done using the [--geno](https://www.cog-genomics.org/plink/1.9/filter#missing) and [--mind](https://www.cog-genomics.org/plink/1.9/filter#missing) options to filter variants and individuals respectively. For example to remove variants with >5% missing data, we can write:
 
 ```shell
-plink --bfile gwas --geno 0.05 --make-bed --out gwas_filtered
+plink --bfile ./data/gwas --geno 0.05 --make-bed --out QC/gwas_filtered
 ```
 
 The output dataset will be called `gwas_filtered` and will be in the plink format (.bim/.bed/.fam).
@@ -116,7 +117,7 @@ The output dataset will be called `gwas_filtered` and will be in the plink forma
     <summary> Answer </summary> 
 
 ```shell
-plink --bfile gwas_filtered --mind 0.05 --make-bed --out gwas_filtered
+plink --bfile QC/gwas_filtered --mind 0.05 --make-bed --out QC/gwas_filtered
 ```
 
 </details>
@@ -142,7 +143,7 @@ The Hardy-Weinberg Equilibrium (HWE) is a consequence of random mating within a 
 The [--hwe <p-value>](https://www.cog-genomics.org/plink/1.9/filter#hwe) option in PLINK filters out all variants which have Hardy-Weinberg equilibrium exact test p-value below the provided threshold. This can be used to filter out genotyping errors, which can result in false positive hits. An extreme p-value (ef: 1e-50) can be used to avoid filtering out actual variants:
 
 ```shell
-plink --bfile gwas_filtered --hwe 1e-50 --make-bed --out gwas_filtered
+plink --bfile QC/gwas_filtered --hwe 1e-50 --make-bed --out QC/gwas_filtered
 ```
 
  **Q1.6:** How many variants are removed ? What happens if you set the p-value to 0.05 ? What are the consequences of choosing one value or the other?
@@ -173,7 +174,7 @@ Individuals with extreme heterozygosity levels are usually removed from GWAS ana
 Fortunately, PLINK can generate a file containing the F coefficient for each individual. This can be done using the [--het](https://www.cog-genomics.org/plink/1.9/basic_stats#ibc) option. However, it does not take Linkage Disequilibrium (LD) into account[^QC-1]. So, first we are going to generate a list of independant variants:
 
 ```shell
-plink --bfile gwas_filtered --indep-pairwise 200 50 0.25 --out gwas_filtered
+plink --bfile QC/gwas_filtered --indep-pairwise 200 50 0.25 --out QC/gwas_filtered
 ```
 
 This command will generate a list of independant variants, using a window size of 200 variants, moving 50 variants at a time, removing pairs of variants with a LD r2 > 0.25. This process is called *pruning* and is necessary to avoid biases due to correlated variants.
@@ -186,7 +187,7 @@ Now, we can use this list of *pruned* variants to compute the F coefficients:
     <summary> Answer </summary>
 
 ```shell
-plink --bfile gwas_filtered --extract gwas_filtered.prune.in --het --out gwas_filtered
+plink --bfile QC/gwas_filtered --extract QC/gwas_filtered.prune.in --het --out QC/gwas_filtered
 ```
 
  </details>
@@ -194,7 +195,7 @@ plink --bfile gwas_filtered --extract gwas_filtered.prune.in --het --out gwas_fi
 In this practical, we will remove samples outside 3 standard deviations for the cohort's mean. The [het_check.R](scripts/het_check.R) script can be used for this purpose ("both" means that both individuals with a F coeff >= 3 SDs and <= 3 SDs will be removed):
 
 ```shell
-Rscript scripts/het_check.R -i gwas_filtered.het -f "both"
+Rscript scripts/het_check.R -i QC/gwas_filtered.het -f "both"
 ```
 
 The script also plots the distribution of the F coefficients in the cohort. A low F value corresponds to a high heterozygosity and a high F value corresponds to a low heterozygosity and are plotted in red and blue respectively.
@@ -207,14 +208,14 @@ The script also plots the distribution of the F coefficients in the cohort. A lo
 We can then produce the final filtered file by only keeping the individuals which are passing the heterozygosity filter:
 
 ```shell
-plink --bfile gwas_filtered --keep gwas_filtered.het.valides --make-bed --out gwas_filtered
+plink --bfile QC/gwas_filtered --keep QC/gwas_filtered.het.valides --make-bed --out QC/gwas_filtered
 ```
 
 ## Kinship
 
 An important GWAS assumption is that the observations (individuals) are independant. Remember that we are assuming that alleles are randomly distributed in the population, and related individuals share more SNPs that expected by chance. Moreover, if two individuals are from the same family, they share similar genetics but also a similar environment, which can lead to spurious associations if the environment has an impact on the trait. We are going to remove individuals in our cohort which are at least second-degree relatives. If family information is not present in the dataset, we can use the Identity-By-Descent (IBD) to estimate the relatedness between pairs of individuals. PLINK returns the IBD as a `PI_HAT` value:
 
-$$ PI\_HAT = P(IBD=2) + 0.5*P(IBD=1) $$
+$$ PIHAT = P(IBD=2) + 0.5*P(IBD=1) $$
 
 Where:
  - *P(IBD=2)* is the probability that 2 individuals share 2 alleles IBD.
@@ -223,7 +224,7 @@ Where:
 Use [--genome](https://www.cog-genomics.org/plink/1.9/ibd) to list individuals having PI-HAT > 0.3. A `related.genome` file containing interbreeding statistics for each pair of individuals with Pi-HAT > 0.25 is created. Please note that the PI_HAT calculation is not LD-aware, luckily, we can reuse the pruned list of variants generated during the previous step `gwas_filtered.prune.in`:
 
 ```shell
-plink --bfile gwas_filtered --extract gwas_filtered.prune.in --genome --out related --min 0.25
+plink --bfile QC/gwas_filtered --extract QC/gwas_filtered.prune.in --genome --out QC/related --min 0.25
 ```
 
 The file is empty! We do not have close relatives in the dataset (if you have time you can try to run the same command on the raw dataset: `gwas`). If we had some relatives, we could use the `--remove related.genome` command to remove individuals listed in the first 2 columns of the `related.genome` file (family-id and individual-id).
@@ -238,13 +239,13 @@ A Principal Component Analysis (PCA) can help us to visualise patterns in the ge
 PLINK can compute the PCA for us with the [--pca](https://www.cog-genomics.org/plink/1.9/strat#pca) option. This will generate the `.eigenval` and `.eigenvec` files, containing the eigen values and the eigen vectors (=principal components) respectively.
 
 ```shell
-plink --bfile gwas_filtered --pca --out pca
+plink --bfile QC/gwas_filtered --pca --out QC/pca
 ```
 
 We will use a custom R script to plot the PCA from the `.eigenvec` file:
 
 ```shell
-Rscript ../scripts/PCA.R -i pca.eigenvec -f gwas_filtered.fam -b TRUE -o PCA
+Rscript ./scripts/PCA.R -i QC/pca.eigenvec -f QC/gwas_filtered.fam -b TRUE -o QC/PCA
 ```
 
 ![PCA_plot](./images/PCA.png "PCA produced with plink.")
@@ -261,7 +262,7 @@ Here, we will remove variants with a MAF < 0.01. Write the command to filter the
     <summary> Answer </summary>
 
 ```shell
-plink --bfile gwas_filtered --maf 0.01 --make-bed --out gwas_final
+plink --bfile QC/gwas_filtered --maf 0.01 --make-bed --out QC/gwas_final
 ```
 
  </details>
