@@ -4,6 +4,14 @@ Now that we have applied quality control to our dataset, we can proceed to the a
 
 In a GWAS our null hypothesis (H0) is: `The genetic variant is not associated with the trait`.
 
+## Filtering on chromosomes:
+
+For the purpose of this practical, we are going to focus on chromosomes 8 and 11. We can use the `--chr` parameter in PLINK to only keep variants pertaining to one chromosome:
+
+```shell
+plink --bfile QC/gwas_final --chr 8,11 --make-bed --out QC/gwas_final_subset
+```
+
 ## A simple GWAS model:
 
 The model we are going to use depends on the phenotype (Y) under study:
@@ -18,7 +26,7 @@ Here, we have a case/control phenotype, so we are going to perform a logistic re
 ```shell
 mkdir GWAS/
 
-plink --bfile QC/gwas_final --logistic --out GWAS/gwas_logistic
+plink --bfile QC/gwas_final_subset --logistic --out GWAS/gwas_logistic
 ``` 
 
 This should generate a `gwas_logistic.assoc.logistic` file, containing the results of our regression model. The documentation for this file is available here: https://www.cog-genomics.org/plink/1.9/formats#assoc
@@ -54,9 +62,9 @@ gwas_results <- gwas_results[order(gwas_results$P),] # Ordering the results by P
     <summary> Answer </summary> 
 
 > - Our top hit, rs2513514 has an AF of 0.48 in Japanese but only 0.31 in Han Chinese. 
-> - The 2nd hit rs1548299 has an AF of 0.89 in Japanese but only 0.71 in Han Chinese. 
-> - Again for the 3rd hit: rs2508756 has an AF of 0.50 in Japanese, and 0.33 in Chinese. 
-> - Could our results be biased by ancestry?
+> - The 2nd hit rs2508756 has an AF of 0.50 in Japanese but only 0.33 in Han Chinese. 
+> - The 3rd hit rs7840927 has an AF of 0.81 in Japanese and 0.85 in Han Chinese.
+> - Could some of our results our results be biased by ancestry?
 
 </details>
 
@@ -67,7 +75,7 @@ Luckily, we have a file in our dataset indicating which population each sample b
 Build the model including population as a covariate:
 
 ```shell
-plink --bfile QC/gwas_final --logistic --covar data/gwas.covars --covar-name POP --out GWAS/gwas_logistic_adjusted
+plink --bfile QC/gwas_final_subset --logistic --covar data/gwas.covars --covar-name POP --out GWAS/gwas_logistic_adjusted
 ```
 
 > [!WARNING]
@@ -92,14 +100,14 @@ adj_gwas_results <- adj_gwas_results[adj_gwas_results$TEST == "ADD",] # Only kee
 adj_gwas_results <- adj_gwas_results[order(adj_gwas_results$P),] # Ordering the results by P-values
 ```
 
-**Q2.5**: Check the top three SNPs from the initial model: rs2513514, rs1548299 and rs2508756. What are their p-values in the adjusted model? 
+**Q2.5**: Check the top three SNPs from the initial model: rs2513514, rs1548299 and rs2508756. What are their p-values in the adjusted model? How do the differences in p-values compare to the differences in allele frequencies?
 
 <details>
     <summary> Answer </summary> 
 
 > - rs2513514 7.76e-04 vs 6.29e-06
-> - rs1548299 1.90e-02 vs 8.75e-06
 > - rs2508756 1.02e-03 vs 1.67e-05
+> - rs7840927 1.06e-05 vs 5.49e-05
 
 </details>
 
@@ -111,7 +119,6 @@ adj_gwas_results <- adj_gwas_results[order(adj_gwas_results$P),] # Ordering the 
 > - rs554297 has an AF of 0.96 in Japanese, 0.98 in Han Chinese
 > - rs7840927 has an AF of 0.81 in Japanese, 0.89 in Han Chinese
 > - rs11204005 has an AF of 0.59 in Japanese, 0.58 in Han Chinese
-> - rs2460338 has an AF of 0.52 in Japanese, 0.60 in Han Chinese
 > - These SNPs are less likely to be incluenced by population structure and could be true positive hits!
 
 </details>
@@ -123,34 +130,38 @@ head -n 1 GWAS/gwas_logistic_adjusted.assoc.logistic > GWAS/gwas_adjusted_SNPs.a
 awk '$5 == "ADD" { print }' GWAS/gwas_logistic_adjusted.assoc.logistic >> GWAS/gwas_adjusted_SNPs.assoc.logistic # We only keep the lines corresponding to "ADD"
 ```
 
-## Manhattan Plot:
+## Manhattan Plots:
 
 ```shell
+Rscript ./scripts/manhattan_plot.R -i GWAS/gwas_logistic.assoc.logistic -b BP -m SNP -p P -o GWAS/manhattan.pdf -v TRUE
 Rscript ./scripts/manhattan_plot.R -i GWAS/gwas_adjusted_SNPs.assoc.logistic -b BP -m SNP -p P -o GWAS/manhattan_adjusted.pdf -v TRUE
 ```
 
 <details>
     <summary> ![manhattan_plot](./images/manhattan_adjusted.pdf "Manhattan plot representing the associated loci.") </summary> 
+</details>
 
-## QQplot:
+## QQplots:
 
 A Quantile-Quantile plot (QQplot) is a graphical tool used in GWAS to assess the distribution of observed p-values against the expected distribution under the null hypothesis (no association between the variant and the trait):
  - The x-axis represents the expected -log10(p-values) under the null hypothesis (uniform distribution).
  - The y-axis represents the observed -log10(p-values) from the association test.
 
 ```shell
+Rscript ./scripts/QQplot.R -i GWAS/gwas_logistic.assoc.logistic -p P -o GWAS/QQplot.png -v TRUE
 Rscript ./scripts/QQplot.R -i GWAS/gwas_adjusted_SNPs.assoc.logistic -p P -o GWAS/QQplot_adjusted.png -v TRUE
 ```
 
 <details>
-    <summary> ![QQplot_GWAS](./images/qqplot_adjusted.png "QQPlot .") </summary> 
+    <summary> ![QQplot_GWAS](./images/qqplot_adjusted.png "QQPlot.") </summary> 
+</details>
 
 How to interpret:
  - If the points lie on the diagonal line (y = x), the observed p-values follow the expected distribution, indicating no systematic bias or inflation.
  - Deviation above the line suggests potential associations (true signals) or population stratification/inflation.
  - Deviation below the line may indicate conservative test statistics or overcorrection.
 
-QQplots are essential for diagnosing genomic inflation and identifying potential false positives or technical artifacts in GWAS results. Here we can see that we are lacking power to detect associations, we will need more samples to validate the peak we observed.
+QQplots are essential for diagnosing genomic inflation and identifying potential false positives or technical artifacts in GWAS results. Here, we can see that the non-adjusted model presents a slight inflation due to population stratification. In the adjusted model, we are lacking power to detect associations, we will need more samples to validate the peak we observed.
 
 ## Post-GWAS steps:
 
