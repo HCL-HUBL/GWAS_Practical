@@ -1,5 +1,14 @@
 # RVAS (Rare Variants Association Studies)
 
+ 1. [Introduction](#introduction)
+ 2. [Methods](#methods)
+ 3. [SAIGE](#saige)
+ 4. [Preparation of the input data](#preparation-of-the-input-data)
+ 5. [Creating the null model](#step-1-creating-the-null-model)
+ 6. [Creating the full model](#step-2-creating-the-full-model)
+
+## Introduction
+
 In the last section, we found some variants associated with our trait of interest. However GWAS, by design, can only find "common" SNPs in our population, as it needs enough carriers of each allele to reach statistical significance. We know that rare variants can have a high impact on diseases. For example, a **Mendelian trait** is a trait influenced by a single gene. A known example of Mendelian disease is Huntington disease, often caused by an inherited mutation in the *HHT* gene.
 
 > [!NOTE] 
@@ -14,9 +23,11 @@ plink --bfile QC/gwas_final --freq --out RVAS/gwas_final
 <details>
     <summary> Answer </summary> 
 
-> There are none. Remember that we removed rare SNPs during the last step of the quality control pipeline, to perform less tests. But even if we kept them, it is unlikely that they would reach statistical significance.
+> There are none. Remember that we removed rare SNPs during the last step of the quality control pipeline, to perform less tests. And even if we kept them, it is unlikely that they would reach statistical significance in a standard GWAS analysis.
 
 </details>
+
+## Methods
 
 How can we study rare variants, which have low frequencies and are more numerous that common variants?
 
@@ -29,114 +40,137 @@ The main rationale is to aggregate the rare variants by regions (often genes), t
 | Variance-component test | Test the variance of genetic effects | Allows for SNP-SNP interaction; Powerful when non-causal variants are present (or protective and deleterious variants) | Less powerful than Burden when all variants are causal and in the same direction | Sequence kernel association test (SKAT) |
 | Combined tests | Combines Burden and Variance-component tests | Powerful even with few causal variants, having opposite directions | Needs accurate classification of the variants impact; Choosing an appropriate kernel is often challenging | SKAT-O; MiST |
 
-In this practical, we are going to use PLINK to perform a Burden Test on our dataset. We will consider rare variants as variants with a MAF < 0.01
+## SAIGE (Scalable and Accurate Implementation of Generalized Mixed Effects Models)
+
+In this practical, we are going to use [SAIGE-GENE+](https://github.com/saigegit/SAIGE) a scalable and efficient tool for rare variant association testing in large biobanks (e.g., UK Biobank, All of Us).
+
+SAIGE-GENE+:
+- Handles **large datasets** (millions of samples).
+- Supports **burden, SKAT, and SKAT-O** tests.
+- Includes **covariate adjustment** (e.g., PCs, sex, age).
+- Optimized for **binary and quantitative traits**.
+- Works with **VCF/BCF files** (or PLINK formats).
 
 ## Preparation of the input data:
 
-We will start from the quality controlled dataset, just before we removed variants with a MAF < 0.01. This time we will remove variants with a MAF > 0.01, [--max-maf](https://www.cog-genomics.org/plink/1.9/filter#maf) imposes a upper MAF bound for variants.
+SAIGE-GENE+ requires:
+ - Genotype data: .bed / .bim / .fam
 
-```shell
-plink --bfile QC/gwas_filtered --max-maf 0.01 --make-bed --out RVAS/rvas_final
+ - Phenotype data, which can contains covariates:
+
+| IID | FID | PHENOTYPE | POP | PC1 | PC2 |
+| --- | --- | --- | --- | --- | --- |
+| CH18524 | NA18524 | 0 | 1 | 0.118372 | 0.0180349 |
+| CH18526 | NA18526 | 0 | 1 | 0.103803 | \-0.000732849 |
+| CH18529 | NA18529 | 0 | 1 | 0.100738 | 0.00759697 |
+
+> [!NOTE]  
+> For binary phenotypes the phenotypes are coded with 0 (controls) and 1 (cases).
+ 
+ - A .groupFile, which indicates which variants belong to a region and their annotations:
+
+```
+NAT2 var rs2029830
+NAT2 anno MODIFIER
+GFRA2 var  rs117857 rs156430 rs1706057
+GFRA2 anno no_annot MODERATE no_annot
 ```
 
-**Q3.2**: Use the same command as above to get the allele frequencies of the `rvas_final` dataset. What is the highest fequency ?
+## Step 1: creating the null model:
+
+First, we are going to create the null model, which represents the impact of the covariates **only** on the trait (here the population structure: "POP"). This null model will be used in step 2 for adjusting the full model.
+
+```shell
+Rscript /opt/progrs/SAIGE/extdata/step1_fitNULLGLMM.R \
+    --plinkFile="QC/gwas_filtered" \
+    --phenoFile="../data/saige.phenofile" \
+    --phenoCol="PHENOTYPE" \
+    --covarColList="POP" \
+    --qCovarColList="POP" \
+    --sampleIDColinphenoFile="IID" \
+    --isCovariateOffset=FALSE \
+    --invNormalize=FALSE \
+    --isCateVarianceRatio=TRUE \
+    --traitType=binary \
+    --outputPrefix=saige_out \
+    --nThreads=2 \
+    --IsOverwriteVarianceRatioFile=TRUE
+```
+
+This step creates to files, that will be used in step 2:
+ 1) *saige_out.rda*: containing the null model
+ 2) *saige_out.varianceRatio.txt*: a variance-ratio file
+
+### The variance-ratio:
+
+The variance-ratio (often denoted as tau) is the ratio of:
+ - The variance of the random effects (due population structure, polygenic brackground etc...)
+ - The variance of the residual error (unexplained variance in the phenotype)
+
+If `tau=0`: there is no random effect variance (no population structure);
+If `tau>0`: there is additional variance due to unmodeled factors (e.g., population stratification, familial relatedness).
+
+SAIGE will use this ratio to adjust the test statistics to account for inflation caused by these confounders.
+
+## Step 2: creating the full model:
+
+This step performs burden, SKAT, and SKAT-O tests using the null model from Step 1.
+
+```shell
+Rscript /opt/progrs/SAIGE/extdata/step2_SPAtests.R \
+		--bedFile="QC/gwas_filtered.bed" \
+		--bimFile="QC/gwas_filtered.bim" \
+		--famFile="QC/gwas_filtered.fam" \
+        --AlleleOrder="alt-first" \
+		--groupFile="../data/saige.groupFile" \
+		--GMMATmodelFile="RVAS/saige_out.rda" \
+		--varianceRatioFile="RVAS/saige_out.varianceRatio.txt" \
+		--LOCO=FALSE \
+		--is_output_markerList_in_groupTest=TRUE \
+		--is_single_in_groupTest=FALSE \
+		--SAIGEOutputFile="./RVAS/saige_gene_based.tsv" \
+		--maxMAF_in_groupTest=0.001,0.01,0.1 \
+        --annotation_in_groupTest="no_annot:HIGH:MODIFIER:MODERATE:LOW"
+```
+
+The output file `RVAS/saige_gene_based.tsv` should contain the following data:
+ - *Region*: set name
+ - *Group*: the annotation mask considered (variants without these annotaitons were ignored)
+ - *max_MAF*: the MAF mask considered (variants with `MAF > max_MAF` were ignored)
+ - *Pvalue*: the p-value of the SKAT-O test
+ - *Pvalue_Burden*: the p-value of the burden test
+ - *Pvalue_SKAT*: the p-value of the SKAT test
+ - *BETA_Burden*: the effect-size estimated by the burden test
+ - *SE_Burden*: the standard error of the effect-size
+ - *MAC*: Minor Allele Count in the set
+ - *MAC_case*: Minor Allele Count in cases
+ - *MAC_control*: Minor Allele Count in controls
+ - *Number_rare*: number of markers that are not `MAC > MACCutoff_to_CollapseUltraRare` (=10 by default)
+ - *Number_ultra_rare*: number of markers that are `MAC <= MACCutoff_to_CollapseUltraRare` (=10 by default)
+
+As for the gwas results, we have a `p-value` indicating the strength of association between the set and the phenotype and a `BETA` value indicating the effect-size.
+
+**Q3.2**: What is the top gene in terms of p-value? What is the beta value of this gene and what can you conclude?
 
 <details>
     <summary> Answer </summary> 
 
-> The highest frequency is now 0.008197. We succesfully removed "common" variants from the dataset.
+> The top gene is SCARA5. The Beta value is 1.78, which means that cases are enriched in rare variants in this gene.
 
 </details>
 
-## Filtering on chromosomes:
+## QQPlot:
 
-For the purpose of this practical, we are going to focus on chromosomes 8 and 11. We can use the `--chr` parameter in PLINK to only keep variants pertaining to one chromosome:
+As for the GWAS analysis, we can create a QQplot to check inflation/deflation of the p-values we obtained with the set-tests:
 
 ```shell
-plink --bfile RVAS/rvas_final --chr 8,11 --make-bed --out RVAS/rvas_final_subset
+Rscript ./scripts/QQplot.R -i RVAS/saige_gene_based.tsv -p Pvalue -o RVAS/QQplot_SKATO.png -v TRUE
+Rscript ./scripts/QQplot.R -i RVAS/saige_gene_based.tsv -p Pvalue_SKAT -o RVAS/QQplot_SKAT.png -v TRUE
+Rscript ./scripts/QQplot.R -i RVAS/saige_gene_based.tsv -p Pvalue_Burden -o RVAS/QQplot_Burden.png -v TRUE
 ```
-
-## Creation of the set test
-
-In PLINK, burden tests are performed by grouping variants into predefined sets (such as genes), collapsing them into a single genetic score per individual, and testing whether this score is associated with the phenotype using linear or logistic regression.
-
-Here, we will define each gene as a set. The coordinates of each gene in the hg19 reference genome are availabile in `./data/glist-hg19`.
-
-```shell
-plink --bfile RVAS/rvas_final_subset --make-set data/glist-hg19 --write-set --out RVAS/glist-hg19
-```
-
-This will create a `RVAS/glist-hg19.set` file, you can check its content with `less`.
-
-## The association Test:
-
-PLINK collapses variants within each set into a single score per individual.
-
-> [!Note]
-> This is a simple burden test, it will only detect associations if all variants affect the trait in the same direction. This lose power if variants in a gene have opposite effects, or many variants are neutral. Other models and tools are available for more complex associations, see the Table at the beginning of this section for more details.
-
-```shell
-plink --bfile RVAS/rvas_final_subset --logistic mperm=10000 --assoc set-test perm --set-p 1 --set RVAS/glist-hg19.set --out RVAS/rvas_final_burden
-```
-
-**Q3.3**: What is the meaning of `set-test` ?
-
-<details>
-    <summary> Answer </summary> 
-
-`set-test` tests the significance of variant sets; https://www.cog-genomics.org/plink/1.9/assoc#set
-
-</details>
-
-**Q3.4**: Whe did we add `--logistic` ?
-
-<details>
-    <summary> Answer </summary> 
-
-We have a binary trait (case/controls), so we need to perform a logistic regression to test our sets against the phenotype. If we had a continuous phenotype, we would use `--linear`.
-
-</details>
-
-## Interpretation of results
-
-The output file `rvas_final_burden` should contain the following data:
-
-| SET\_ID | N\_VARIANTS | BETA | P\_VALUE | METHOD |
-| --- | --- | --- | --- | --- |
-| GENE1 | 10 | 0.5 | 0.001 | burden |
-| GENE2 | 8 | \-0.3 | 0.04 | SKAT |
-
-As for the gwas results, we have a `p-value` indicating the strength of association between the set and the phenotype and a `BETA` value indicating the set effect size.
-
-**Q3.5**: Can we interpret the p-value directly ? Is there something we need to do before ? (hint: this is something that applies to GWAS as well).
-
-<details>
-    <summary> Answer </summary> 
-
-We are doing one test per set. As there are X sets, we need to correct the p-values for multiple testing. This can be done by adjusting the p-values obtained here, or by using the `--adjust` parameter when performing the test (see below).
-
-</details>
-
-## The adjusted association test:
-
-```shell
-plink --bfile RVAS/rvas_final_subset --logistic --adjust --assoc set-test perm --set RVAS/glist-hg19.set --out RVAS/rvas_final_burden_adjusted
-```
-
-**Q3.6**: Are there sets (genes) significantly associated with our trait of interest ? How many, and do they make biological sense ?
-
-<details>
-    <summary> Answer </summary> 
-
-Yes, ...
-
-</details>
-
-### QQPlot:
-
-
 
 ## Going further
 
-`test per annotation (SAIGE)`
+SAIGE gives the possibility to apply annotations masks. For each region, SAIGE will perform one test per mask (for example only markers annotated with a "HIGH" impact). This can uncover some more subtle associations between genes and phenotypes.
 
+Check the SAIGE documentation and try to apply different annotation masks ("--annotation_in_groupTest").
