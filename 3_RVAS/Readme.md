@@ -33,10 +33,35 @@ How can we study rare variants, which have low frequencies and are more numerous
 
 The main rationale is to aggregate the rare variants by regions (often genes), to aggregate the effect the rare variants located in each region. Multiple tools have been developped to do that, with different approaches.
 
+
+### The Burden model:
+
+In a Burden test, the genetic variants in a defined region are aggregated into a single "burden" score. The score is often obtained with a weighted sum of the rare alleles carried by an individual. The weights are often based on the MAF or annotation.
+
+For a region with *n* variants, the Burden score *B* for the individual *i* is obtained with:
+
+```math
+{B}_{i} = \sum_{j=1}^{n} {w}_{j}{G}_{ij}
+```
+
+Where: 
+ - `wj` is the the weight of variant j
+ - `Gij` is the genotype of the individual *i* for variant *j*
+
+This model is powerful, but only if all the variants in a region are going in the same direction (disease-causing or protective).
+
+### The SKAT model:
+
+The Sequence Kernel Association Test (SKAT) is a variance component test that tests the variance of genetic effects rather than the mean.
+
+### The SKAT-O model:
+
+SKAT-O is a combination of both Burden and SKAT tests.
+
+### Summary:
 | Approach | Rationale | Advantage | Disadvantage | Tools |
 | --- | --- | --- | --- | --- |
 | Burden Test | Collapse rare variants in a genetic region | Powerful if all variants in the region are causal and in the same direction | Less powerful if only a few variants are causal, or have an opposite effect | CAST; WST |
-| Adaptative Burden Test | Burden with flexible weights/thresholds | Allows for different directions of effect and for variants-genes interactions | Only applicable in specific cases | KBAC; aSum |
 | Variance-component test | Test the variance of genetic effects | Allows for SNP-SNP interaction; Powerful when non-causal variants are present (or protective and deleterious variants) | Less powerful than Burden when all variants are causal and in the same direction | Sequence kernel association test (SKAT) |
 | Combined tests | Combines Burden and Variance-component tests | Powerful even with few causal variants, having opposite directions | Needs accurate classification of the variants impact; Choosing an appropriate kernel is often challenging | SKAT-O; MiST |
 
@@ -118,18 +143,18 @@ This step performs burden, SKAT, and SKAT-O tests using the null model from Step
 
 ```shell
 Rscript /opt/progrs/SAIGE/extdata/step2_SPAtests.R \
-		--bedFile="QC/gwas_filtered.bed" \
-		--bimFile="QC/gwas_filtered.bim" \
-		--famFile="QC/gwas_filtered.fam" \
+        --bedFile="QC/gwas_filtered.bed" \
+        --bimFile="QC/gwas_filtered.bim" \
+        --famFile="QC/gwas_filtered.fam" \
         --AlleleOrder="alt-first" \
-		--groupFile="../data/saige.groupFile" \
-		--GMMATmodelFile="RVAS/saige_out.rda" \
-		--varianceRatioFile="RVAS/saige_out.varianceRatio.txt" \
-		--LOCO=FALSE \
-		--is_output_markerList_in_groupTest=TRUE \
-		--is_single_in_groupTest=FALSE \
-		--SAIGEOutputFile="./RVAS/saige_gene_based.tsv" \
-		--maxMAF_in_groupTest=0.001,0.01,0.1 \
+        --groupFile="../data/saige.groupFile" \
+        --GMMATmodelFile="RVAS/saige_out.rda" \
+        --varianceRatioFile="RVAS/saige_out.varianceRatio.txt" \
+        --LOCO=FALSE \
+        --is_output_markerList_in_groupTest=TRUE \
+        --is_single_in_groupTest=FALSE \
+        --SAIGEOutputFile="./RVAS/saige_gene_based.tsv" \
+        --maxMAF_in_groupTest=0.001,0.01,0.1 \
         --annotation_in_groupTest="no_annot:HIGH:MODIFIER:MODERATE:LOW"
 ```
 
