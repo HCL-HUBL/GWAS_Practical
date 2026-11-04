@@ -9,7 +9,12 @@
 
 ## Introduction
 
-In the last section, we found some variants associated with our trait of interest. However GWAS, by design, can only find "common" SNPs in our population, as it needs enough carriers of each allele to reach statistical significance. We know that rare variants can have a high impact on diseases. For example, a **Mendelian trait** is a trait influenced by a single gene. A known example of Mendelian disease is Huntington disease, often caused by an inherited mutation in the *HHT* gene.
+In the last section, we found variants associated with our trait of interest. However GWAS, by design, can only find "common" SNPs in our population, as it needs enough carriers of each allele to reach statistical significance. We know that rare variants can have a high impact on diseases. For example, a **Mendelian trait** is a trait influenced by a single gene. A known example of Mendelian disease is Huntington disease, often caused by an inherited mutation in the *HHT* gene.
+
+The plot below represents the distribution of beta values between rare (MAF < 0.01) and common (MAF > 0.01) variants in the [GWAS catalog associations file](https://ftp.ebi.ac.uk/pub/databases/gwas/releases/latest/) (as of November 2026). We can see that there is a surrepresentation of low beta values in the common variants compared to the rare variants:
+
+![manhattan_plot](./images/GWAS_boxplot_BETA_MAF.png "Distribution of the BETA values between rare and common variants in the GWAS catalog.")
+
 
 > [!NOTE] 
 > The definition of a rare variant differs between studies. Most of the time, variants with a Minor Allele Frequency (MAF) < 0.01 are considered rare.
@@ -27,16 +32,16 @@ plink --bfile QC/gwas_final --freq --out RVAS/gwas_final
 
 </details>
 
+Studying rare variants complements standard GWAS analyses by uncovering mechanisms and high-impact genotype-phenotype associations that common variant analyses may miss. But how can we study rare variants, which have low frequencies and are more numerous that common variants?
+
 ## Methods
 
-How can we study rare variants, which have low frequencies and are more numerous that common variants?
-
-The main rationale is to aggregate the rare variants by regions (often genes), to aggregate the effect the rare variants located in each region. Multiple tools have been developped to do that, with different approaches.
+The main rationale is to aggregate the rare variants by regions, often genes, to aggregate their effects. Multiple tools have been developped to perform this task, with different approaches.
 
 
 ### The Burden model:
 
-In a Burden test, the genetic variants in a defined region are aggregated into a single "burden" score. The score is often obtained with a weighted sum of the rare alleles carried by an individual. The weights are often based on the MAF or annotation.
+In a Burden test, the genetic variants in a defined region are aggregated into a single "burden" score. The score is often obtained with a weighted sum of the rare alleles carried by an individual. The weights are often based on the MAF or fucntional annotation.
 
 For a region with *n* variants, the Burden score *B* for the individual *i* is obtained with:
 
@@ -46,13 +51,31 @@ For a region with *n* variants, the Burden score *B* for the individual *i* is o
 
 Where: 
  - `wj` is the the weight of variant j
- - `Gij` is the genotype of the individual *i* for variant *j*
+ - `Gij` is the genotype of the individual *i* for variant *j* (0,1,2)
+
+The association test itself is a regression of the phenotype on the burden score:
+
+```math
+ {y}_{i} = \alpha + \beta {B}_{i} + \epsilon_{i}
+```
+
+Where *beta* represents the effect of the burden score on the phenotype. The null hypothesis (H0) in a burden test assumes that the aggregated burden score has no effect on the phenotype, i.e., β=0. This means that the rare variants in the region do not collectively contribute to the trait or disease being studied. The association test evaluates whether the observed data deviates significantly from this null hypothesis. Typically, a Wald test, score test, or likelihood ratio test is used to assess the significance of β. If the test rejects H0, it suggests that the burden of rare variants in the region is associated with the phenotype.
 
 This model is powerful, but only if all the variants in a region are going in the same direction (disease-causing or protective).
 
 ### The SKAT model:
 
-The Sequence Kernel Association Test (SKAT) is a variance component test that tests the variance of genetic effects rather than the mean.
+The Sequence Kernel Association Test (SKAT) is a variance component test that tests the variance of genetic effects rather than the mean. It is more flexible than a Burden test since it allows for both protective and risk variants in the same region. SKAT models the genetic effects as random effects and tests whether the variance of these effects is greater than zero.
+
+For a region with n variants SKAT assumes that:
+
+```math
+{y}_{i} = \alpha + \sum_{j=1}^{n} {G}_{ij} \beta_{ij} + \epsilon_{i}
+```
+
+Where:
+
+
 
 ### The SKAT-O model:
 
@@ -199,3 +222,11 @@ Rscript ./scripts/QQplot.R -i RVAS/saige_gene_based.tsv -p Pvalue_Burden -o RVAS
 SAIGE gives the possibility to apply annotations masks. For each region, SAIGE will perform one test per mask (for example only markers annotated with a "HIGH" impact). This can uncover some more subtle associations between genes and phenotypes.
 
 Check the SAIGE documentation and try to apply different annotation masks ("--annotation_in_groupTest").
+
+## Materials:
+
+ - https://github.com/saigegit/SAIGE
+
+ - https://cloufield.github.io/GWASTutorial/34_rare_variant/#skat-sequence-kernel-association-test
+
+ - https://joellembatchou.github.io/SISG2026_Association_Mapping/index.html

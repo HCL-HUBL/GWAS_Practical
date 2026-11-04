@@ -1,12 +1,10 @@
 # GWAS (Genome Wide Association Study)
 
-Now that we have applied quality control to our dataset, we can proceed to the association tests. We will perform one association test per variant present in our dataset. The objective is to assess which variants significantly have an impact on the probability to harbor the trait under study.
-
-In a GWAS our null hypothesis (H0) is: `The genetic variant is not associated with the trait`.
+Now that we applied quality control to our dataset, we can proceed to the association tests. We will perform one association test per variant present in our dataset. The objective is to assess which variants significantly have an impact on the probability to harbor the trait under study.
 
 ## Filtering on chromosomes:
 
-For the purpose of this practical, we are going to focus on chromosomes 8 and 11. We can use the `--chr` parameter in PLINK to only keep variants pertaining to one chromosome:
+For the purpose of this practical, we are going to focus on chromosomes 8 and 11. We can use the `--chr` parameter in PLINK to only keep variants belonging to a specific chromosome:
 
 ```shell
 plink --bfile QC/gwas_final --chr 8,11 --make-bed --out QC/gwas_final_subset
@@ -14,12 +12,26 @@ plink --bfile QC/gwas_final --chr 8,11 --make-bed --out QC/gwas_final_subset
 
 ## A simple GWAS model:
 
-The model we are going to use depends on the phenotype (Y) under study:
- - For continuous Y: we will use a **linear** regression
- - For categorical Y: we will use a **logistic** regression
+In a GWAS, each locus is studied independently, by modelling the relation between the phenotype *Y* and the SNP:
+
+```math
+Y = f(\alpha X + \beta SNP) + \epsilon
+```
+
+Where:
+ - *Y* is the phenotype (eg: 0 or 1 when performing with a "cases vs controls" study)
+ - *X* is a covariable matrix (eg: age, sex, smoking status etc...)
+ - *SNP* represents the alleles of the variant (coded 0,1,2 in an additive model)
+ - *α* and *β* are the parameters of the model to estimate
+
+The function *f* depends on the phenotype *Y* under study:
+ - For **continuous** Y: we will use a **linear** regression
+ - For **categorical** Y: we will use a **logistic** regression
 
 > [!Note]
-> Other models are possible, for example a model that takes into account dominant or recessive gene action.
+> Other models are possible, for example a model that takes into account a dominant or recessive gene action.
+
+In a GWAS our null hypothesis (H0) is: `The genetic variant is not associated with the trait`. This translate in our model as *β = 0*.
 
 Here, we have a case/control phenotype, so we are going to perform a logistic regression on our data. Use the following PLINK command:
 
@@ -137,9 +149,7 @@ Rscript ./scripts/manhattan_plot.R -i GWAS/gwas_logistic.assoc.logistic -b BP -m
 Rscript ./scripts/manhattan_plot.R -i GWAS/gwas_adjusted_SNPs.assoc.logistic -b BP -m SNP -p P -o GWAS/manhattan_adjusted.pdf -v TRUE
 ```
 
-<details>
-    <summary> ![manhattan_plot](./images/manhattan_adjusted.pdf "Manhattan plot representing the associated loci.") </summary> 
-</details>
+![manhattan_plot](./images/manhattan_adjusted.png "Manhattan plot representing the associated loci.")
 
 ## QQplots:
 
@@ -152,9 +162,8 @@ Rscript ./scripts/QQplot.R -i GWAS/gwas_logistic.assoc.logistic -p P -o GWAS/QQp
 Rscript ./scripts/QQplot.R -i GWAS/gwas_adjusted_SNPs.assoc.logistic -p P -o GWAS/QQplot_adjusted.png -v TRUE
 ```
 
-<details>
-    <summary> ![QQplot_GWAS](./images/qqplot_adjusted.png "QQPlot.") </summary> 
-</details>
+![QQplot_GWAS](./images/qqplot_adjusted.png "QQPlot of the adjusted p-values.")
+
 
 How to interpret:
  - If the points lie on the diagonal line (y = x), the observed p-values follow the expected distribution, indicating no systematic bias or inflation.
@@ -168,7 +177,7 @@ QQplots are essential for diagnosing genomic inflation and identifying potential
 Great! We now have regions significantly associated with our trait. However, we can never be certain that our results are not due to some biases in our cohort / study. After a GWAS it is common to:
  - Validate the results using an independent cohort: with less individuals, but testing only the significant regions. Since we are doing less tests, we do not need to correct as much. If our locus is still significant, it is robust evidence of the association between our locus and the trait.
  - Doing a regional plot: plotting a zoomed version of our significant locus. We can check the LD pattern between the SNPs in that region and look at the neighboring genes.
- - Experimentally confirm the effect of the gene on our trait (With CRISPR knockout for example).
+ - Experimentally confirm the effect of the gene on our trait (with CRISPR knockouts for example).
 
 > [!WARNING]
 > Association studies can find **associations** between alleles and a trait. However, the **causal** link between each allele and the trait cannot be inferred directly. The causal SNP might be a SNP in LD with the significant allele, or there might be an indirect effect of the allele on the trait, involving other genes.
