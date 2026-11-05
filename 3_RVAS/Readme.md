@@ -9,9 +9,9 @@
 
 ## Introduction
 
-In the last section, we found variants associated with our trait of interest. However GWAS, by design, can only find "common" SNPs in our population, as it needs enough carriers of each allele to reach statistical significance. We know that rare variants can have a high impact on diseases. For example, a **Mendelian trait** is a trait influenced by a single gene. A known example of Mendelian disease is Huntington disease, often caused by an inherited mutation in the *HHT* gene.
+In the last section, we found variants associated with our trait of interest. However GWAS, by design, can only find "common" SNPs in our population, as it needs enough carriers of each allele to reach statistical significance. We know that rare variants can have a high impact on diseases. For example, a **Mendelian trait** is a trait influenced by a single gene. A known example of Mendelian disease is Huntington disease, often caused by an inherited mutation in the *HTT* gene.
 
-The plot below represents the distribution of beta values between rare (MAF < 0.01) and common (MAF > 0.01) variants in the [GWAS catalog associations file](https://ftp.ebi.ac.uk/pub/databases/gwas/releases/latest/) (as of November 2026). We can see that there is a surrepresentation of low beta values in the common variants compared to the rare variants:
+The plot below represents the distribution of beta values between rare (MAF < 0.01) and common (MAF > 0.01) variants in the [GWAS catalog associations file](https://ftp.ebi.ac.uk/pub/databases/gwas/releases/latest/) (as of November 2026). We can see that there is a overrepresentation of low beta values in the common variants compared to the rare variants:
 
 ![manhattan_plot](./images/GWAS_boxplot_BETA_MAF.png "Distribution of the BETA values between rare and common variants in the GWAS catalog.")
 
@@ -19,7 +19,7 @@ The plot below represents the distribution of beta values between rare (MAF < 0.
 > [!NOTE] 
 > The definition of a rare variant differs between studies. Most of the time, variants with a Minor Allele Frequency (MAF) < 0.01 are considered rare.
 
-**Q3.1**: look at the Minor Allele Frequencies (MAF) of the top associated SNPs in our GWAS analysis, are there any rare variants? (Here, we will consider a MAF < 0.01).
+**Q3.1**: Look at the Minor Allele Frequencies (MAF) of the top associated SNPs in our GWAS analysis, are there any rare variants? (Here, we will consider a MAF < 0.01).
 
 ```shell
 plink --bfile QC/gwas_final --freq --out RVAS/gwas_final
@@ -32,7 +32,7 @@ plink --bfile QC/gwas_final --freq --out RVAS/gwas_final
 
 </details>
 
-Studying rare variants complements standard GWAS analyses by uncovering mechanisms and high-impact genotype-phenotype associations that common variant analyses may miss. But how can we study rare variants, which have low frequencies and are more numerous that common variants?
+Studying rare variants complements standard GWAS analyses by uncovering mechanisms and high-impact genotype-phenotype associations that common variant analyses may miss. But how can we study rare variants, which have low frequencies and are more numerous than common variants?
 
 ## Methods
 
@@ -41,7 +41,7 @@ The main rationale is to aggregate the rare variants by regions, often genes, to
 
 ### The Burden model:
 
-In a Burden test, the genetic variants in a defined region are aggregated into a single "burden" score. The score is often obtained with a weighted sum of the rare alleles carried by an individual. The weights are often based on the MAF or fucntional annotation.
+In a Burden test, the genetic variants in a defined region are aggregated into a single "burden" score. The score is often obtained with a weighted sum of the rare alleles carried by an individual. The weights are often based on the MAF or functional annotation.
 
 For a region with *n* variants, the Burden score *B* for the individual *i* is obtained with:
 

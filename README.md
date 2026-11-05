@@ -25,7 +25,7 @@ SNPs were added *in-silico* to specific genes to create a signal for the Rare Va
 
 We are starting with the [Quality Control steps](1_QC/).
 
-## Further Ressources:
+## Further Resources:
 
 The GWAS Catalog: https://www.ebi.ac.uk/gwas/ a large repository of summary statistics from published GWAS.
 

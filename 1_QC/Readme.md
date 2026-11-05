@@ -1,6 +1,6 @@
 # Quality Control
 
-In this pratical the quality control steps will be shared between the common (GWAS) and rare (RVAS) variants association studies. The main steps are:
+In this practical the quality control steps will be shared between the common (GWAS) and rare (RVAS) variants association studies. The main steps are:
 
  1. [Remove variants and individuals based on missing data](#missing-data)
  2. [Remove variants based on Hardy-Weinberg](#hardy-weinberg)
@@ -59,7 +59,7 @@ The alleles are ordered according to the [.bim](https://www.cog-genomics.org/pli
 
 **Questions**: 
 
-**Q1.1:** Have a look in chr15.bim. At which genomic position is located SNP rs4932079? What are the two observed alleles for this SNP is this dataset?
+**Q1.1:** Have a look in chr15.bim. At which genomic position is located SNP rs7111951? What are the two observed alleles for this SNP is this dataset?
 
 <details>
     <summary> Answer </summary> 
@@ -68,7 +68,7 @@ The alleles are ordered according to the [.bim](https://www.cog-genomics.org/pli
 
 </details>
 
-**Q1.2:** Have a look in gwas.fam. Which gender is individual NA18550?
+**Q1.2:** Have a look in gwas.fam. Which gender is individual NA18547?
 
 <details>
     <summary> Answer </summary> 
@@ -111,7 +111,7 @@ plink --bfile ./data/gwas --geno 0.05 --make-bed --out QC/gwas_filtered
 
 The output dataset will be called `gwas_filtered` and will be in the plink format (.bim/.bed/.fam).
 
-**Q1.4:** Write the command to filter invididuals with more than 5% missing data (do not forget to start from the SNP-filtered dataset).
+**Q1.4:** Write the command to filter individuals with more than 5% missing data (do not forget to start from the SNP-filtered dataset).
 
 <details>
     <summary> Answer </summary> 
@@ -140,7 +140,7 @@ Missing data can arise due to different factors, including poor quality librarie
 
 The Hardy-Weinberg Equilibrium (HWE) is a consequence of random mating within a population in the absence of mutation, migration, natural selection, or random drift. A significant departure from HWE for a SNP in a sample may indicate non-random mating and possibly population stratification, non-random genotyping error, or missing genotype data in which one allele or genotype is more often misclassified or missing than the other. Including such SNPs can result in spurious associations.
 
-The [--hwe <p-value>](https://www.cog-genomics.org/plink/1.9/filter#hwe) option in PLINK filters out all variants which have Hardy-Weinberg equilibrium exact test p-value below the provided threshold. This can be used to filter out genotyping errors, which can result in false positive hits. An extreme p-value (ef: 1e-50) can be used to avoid filtering out actual variants:
+The [--hwe <p-value>](https://www.cog-genomics.org/plink/1.9/filter#hwe) option in PLINK filters out all variants which have Hardy-Weinberg equilibrium exact test p-value below the provided threshold. This can be used to filter out genotyping errors, which can result in false positive hits. An extreme p-value (e.g. 1e-50) can be used to avoid filtering out actual variants:
 
 ```shell
 plink --bfile QC/gwas_filtered --hwe 1e-50 --make-bed --out QC/gwas_filtered
@@ -181,7 +181,7 @@ This command will generate a list of independant variants, using a window size o
 
 Now, we can use this list of *pruned* variants to compute the F coefficients:
 
-**Q1.8:** Write the command to compute the F coefficient on the *gwas_filtered* dataset, using only the SNPs present in *gwas_filtered.pruned.in*.
+**Q1.8:** Write the command to compute the F coefficient on the *gwas_filtered* dataset, using only the SNPs present in *gwas_filtered.prune.in*.
 
  <details>
     <summary> Answer </summary>
@@ -192,7 +192,7 @@ plink --bfile QC/gwas_filtered --extract QC/gwas_filtered.prune.in --het --out Q
 
  </details>
 
-In this practical, we will remove samples outside 3 standard deviations for the cohort's mean. The [het_check.R](scripts/het_check.R) script can be used for this purpose ("both" means that both individuals with a F coeff >= 3 SDs and <= 3 SDs will be removed):
+In this practical, we will remove samples outside 3 standard deviations for the cohort's mean. The [het_check.R](scripts/het_check.R) script can be used for this purpose ("both" means that both individuals with a F coeff >= 3 SDs or <= 3 SDs will be removed):
 
 ```shell
 Rscript scripts/het_check.R -i QC/gwas_filtered.het -f "both"
@@ -203,7 +203,7 @@ The script also plots the distribution of the F coefficients in the cohort. A lo
 ![heterozygosity_plot](./images/heterozygosity_plot.png "Distribution of the F coefficients in the cohort. A low F value corresponds to a high heterozygosity and a high F value corresponds to a low heterozygosity and are plotted in red and blue respectively.")
 
 > [!WARNING]
-> If you have admixed samples in your cohort, they will naturally have a very low F coefficient. You should consider wether or not to remove them from the analysis, as the high heterozygosity is then expected and is not reflective of the quality of the library.
+> If you have admixed samples in your cohort, they will naturally have a very low F coefficient. You should consider whether or not to remove them from the analysis, as the high heterozygosity is then expected and is not reflective of the quality of the library.
 
 We can then produce the final filtered file by only keeping the individuals which are passing the heterozygosity filter:
 
@@ -230,7 +230,7 @@ plink --bfile QC/gwas_filtered --extract QC/gwas_filtered.prune.in --genome --ou
 The file is empty! We do not have close relatives in the dataset (if you have time you can try to run the same command on the raw dataset: `gwas`). If we had some relatives, we could use the `--remove related.genome` command to remove individuals listed in the first 2 columns of the `related.genome` file (family-id and individual-id).
 
 > [!NOTE]
-> PLINK's [--genome](https://www.cog-genomics.org/plink/1.9/ibd) command is not very accurate. Its accuracy is sufficient for this pratical, but dedicated tools, such as [KING](https://academic.oup.com/bioinformatics/article/26/22/2867/228512) can be used instead.
+> PLINK's [--genome](https://www.cog-genomics.org/plink/1.9/ibd) command is not very accurate. Its accuracy is sufficient for this practical, but dedicated tools, such as [KING](https://academic.oup.com/bioinformatics/article/26/22/2867/228512) can be used instead.
 
 ## Principal Components Analysis
 
@@ -250,7 +250,7 @@ Rscript ./scripts/PCA.R -i QC/pca.eigenvec -f QC/gwas_filtered.fam -b TRUE -o QC
 
 ![PCA_plot](./images/PCA.png "PCA produced with plink.")
 
-**Q1.8:** Interpret the PCA plot. Why are we seeing two distinct groups? How is the distribution of the phenotypes between the groups? How could that affect our GWAS analysis?
+**Q1.9:** Interpret the PCA plot. Why are we seeing two distinct groups? How is the distribution of the phenotypes between the groups? How could that affect our GWAS analysis?
 
 ## Minor Allele Frequencies
 
@@ -267,7 +267,7 @@ plink --bfile QC/gwas_filtered --maf 0.01 --make-bed --out QC/gwas_final
 
  </details>
 
-**Q1.9:** How many individuals and SNPs are remaining in the final dataset? Compare this to the original file.
+**Q1.10:** How many individuals and SNPs are remaining in the final dataset? Compare this to the original file.
 
 <details>
     <summary> Answer </summary> 
