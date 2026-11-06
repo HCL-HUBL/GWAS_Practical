@@ -11,22 +11,30 @@
 
 In the last section, we found variants associated with our trait of interest. However GWAS, by design, can only find "common" SNPs in our population, as it needs enough carriers of each allele to reach statistical significance. We know that rare variants can have a high impact on diseases. For example, a **Mendelian trait** is a trait influenced by a single gene. A known example of Mendelian disease is Huntington disease, often caused by an inherited mutation in the *HTT* gene.
 
-The plot below represents the distribution of beta values between rare (MAF < 0.01) and common (MAF > 0.01) variants in the [GWAS catalog associations file](https://ftp.ebi.ac.uk/pub/databases/gwas/releases/latest/) (as of November 2026). We can see that there is a overrepresentation of low beta values in the common variants compared to the rare variants. This suggests that common variants tend to have smaller effect sizes, while rare variants can have larger effects, as expected for Mendelian traits.
+The plot below represents the distribution of beta values between rare (MAF < 0.01) and common (MAF > 0.01) variants in the [GWAS catalog associations file](https://ftp.ebi.ac.uk/pub/databases/gwas/releases/latest/) (as of November 2026). 
 
 ![manhattan_plot](./images/GWAS_boxplot_BETA_MAF.png "Distribution of the BETA values between rare and common variants in the GWAS catalog.")
 
+**Q3.1**: Interpret the plot. What does this suggest about the effect sizes of rare vs. common variants?
+
+<details>
+    <summary> Answer </summary>
+
+> We can see that there is a overrepresentation of low beta values in the common variants compared to the rare variants. This suggests that common variants tend to have smaller effect sizes, while rare variants can have larger effects, as expected for Mendelian traits.
+
+</details>
 
 > [!NOTE] 
 > The definition of a rare variant differs between studies. Most of the time, variants with a Minor Allele Frequency (MAF) < 0.01 are considered rare.
 
-**Q3.1**: Look at the Minor Allele Frequencies (MAF) of the top associated SNPs in our GWAS analysis, are there any rare variants? (Here, we will consider a MAF < 0.01).
+**Q3.2**: Look at the Minor Allele Frequencies (MAF) of the top associated SNPs in our GWAS analysis, are there any rare variants? (Here, we will consider a MAF < 0.01).
 
 ```shell
 plink --bfile QC/gwas_final --freq --out RVAS/gwas_final
 ```
 
 <details>
-    <summary> Answer </summary> 
+    <summary> Answer </summary>
 
 > There are none. Remember that we removed rare SNPs during the last step of the quality control pipeline, to reduce the multiple testing burden in GWAS. And even if we kept them, it is unlikely that they would reach statistical significance in a standard GWAS analysis. However, this also removed potentially high-impact rare variants, which is why we now use aggregation methods.
 
@@ -64,6 +72,15 @@ Where *β* represents the effect of the burden score on the phenotype:
  - β =/= 0 it suggests that the burden of rare variants in the region is associated with the phenotype (H1)
 
 Typically, a Wald test, score test, or likelihood ratio test is used to assess the significance of β. Please note that burden tests lose power if causal variants have opposite effects (e.g., some risk, some protective).
+
+**Q3.3**: Why might a Burden test lose power if some rare variants in the region are protective and others are risk-increasing?
+
+<details>
+    <summary> Answer </summary>
+
+> Burden tests collapse all variants into a single score, assuming they all contribute to the trait in the same direction. If some variants are protective (negative effect) and others are risk-increasing (positive effect), their effects cancel out in the aggregated score, reducing the test’s power to detect an association.
+
+</details>
 
 ### The SKAT model:
 
@@ -128,7 +145,7 @@ SAIGE-GENE+:
 ## Preparation of the input data:
 
 SAIGE-GENE+ requires:
- - Genotype data: .bed / .bim / .fam
+ - Genotype data in the plink format: *.bed / .bim / .fam*
 
  - Phenotype data, which can contains covariates:
 
@@ -224,7 +241,7 @@ The output file `RVAS/saige_gene_based.tsv` should contain the following data:
 
 As for the gwas results, we have a `p-value` indicating the strength of association between the set and the phenotype and a `BETA` value indicating the effect-size.
 
-**Q3.2**: What is the top gene in terms of p-value? What is the beta value of this gene and what can you conclude?
+**Q3.4**: What is the top gene in terms of p-value? What is the beta value of this gene and what can you conclude?
 
 <details>
     <summary> Answer </summary> 
@@ -232,6 +249,8 @@ As for the gwas results, we have a `p-value` indicating the strength of associat
 > The top gene is SCARA5. The Beta value is 1.78, which means that cases are enriched in rare variants in this gene.
 
 </details>
+
+
 
 ## QQPlot:
 
@@ -242,6 +261,8 @@ Rscript ./scripts/QQplot.R -i RVAS/saige_gene_based.tsv -p Pvalue -o RVAS/QQplot
 Rscript ./scripts/QQplot.R -i RVAS/saige_gene_based.tsv -p Pvalue_SKAT -o RVAS/QQplot_SKAT.png -v TRUE
 Rscript ./scripts/QQplot.R -i RVAS/saige_gene_based.tsv -p Pvalue_Burden -o RVAS/QQplot_Burden.png -v TRUE
 ```
+
+**Q3.5**: Interpret the QQplot.
 
 ## Going further
 
