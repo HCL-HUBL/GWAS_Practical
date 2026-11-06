@@ -11,7 +11,7 @@
 
 In the last section, we found variants associated with our trait of interest. However GWAS, by design, can only find "common" SNPs in our population, as it needs enough carriers of each allele to reach statistical significance. We know that rare variants can have a high impact on diseases. For example, a **Mendelian trait** is a trait influenced by a single gene. A known example of Mendelian disease is Huntington disease, often caused by an inherited mutation in the *HTT* gene.
 
-The plot below represents the distribution of beta values between rare (MAF < 0.01) and common (MAF > 0.01) variants in the [GWAS catalog associations file](https://ftp.ebi.ac.uk/pub/databases/gwas/releases/latest/) (as of November 2026). We can see that there is a overrepresentation of low beta values in the common variants compared to the rare variants:
+The plot below represents the distribution of beta values between rare (MAF < 0.01) and common (MAF > 0.01) variants in the [GWAS catalog associations file](https://ftp.ebi.ac.uk/pub/databases/gwas/releases/latest/) (as of November 2026). We can see that there is a overrepresentation of low beta values in the common variants compared to the rare variants. This suggests that common variants tend to have smaller effect sizes, while rare variants can have larger effects, as expected for Mendelian traits.
 
 ![manhattan_plot](./images/GWAS_boxplot_BETA_MAF.png "Distribution of the BETA values between rare and common variants in the GWAS catalog.")
 
@@ -28,7 +28,7 @@ plink --bfile QC/gwas_final --freq --out RVAS/gwas_final
 <details>
     <summary> Answer </summary> 
 
-> There are none. Remember that we removed rare SNPs during the last step of the quality control pipeline, to perform less tests. And even if we kept them, it is unlikely that they would reach statistical significance in a standard GWAS analysis.
+> There are none. Remember that we removed rare SNPs during the last step of the quality control pipeline, to reduce the multiple testing burden in GWAS. And even if we kept them, it is unlikely that they would reach statistical significance in a standard GWAS analysis. However, this also removed potentially high-impact rare variants, which is why we now use aggregation methods.
 
 </details>
 
@@ -36,7 +36,7 @@ Studying rare variants complements standard GWAS analyses by uncovering mechanis
 
 ## Methods
 
-The main rationale is to aggregate the rare variants by regions, often genes, to aggregate their effects. Multiple tools have been developped to perform this task, with different approaches.
+The main rationale is to aggregate the rare variants by regions, often genes, to aggregate their effects. Multiple tools have been developed to perform this task, with different approaches.
 
 
 ### The Burden model:
@@ -50,7 +50,7 @@ For a region with *n* variants, the Burden score *B* for the individual *i* is o
 ```
 
 Where: 
- - `wj` is the the weight of variant j
+ - `wj` is the weight of variant j
  - `Gij` is the genotype of the individual *i* for variant *j* (0,1,2)
 
 The association test itself is a regression of the phenotype on the burden score:
@@ -59,15 +59,17 @@ The association test itself is a regression of the phenotype on the burden score
  {y}_{i} = \alpha + \beta {B}_{i} + \epsilon_{i}
 ```
 
-Where *beta* represents the effect of the burden score on the phenotype. The null hypothesis (H0) in a burden test assumes that the aggregated burden score has no effect on the phenotype, i.e., β=0. This means that the rare variants in the region do not collectively contribute to the trait or disease being studied. The association test evaluates whether the observed data deviates significantly from this null hypothesis. Typically, a Wald test, score test, or likelihood ratio test is used to assess the significance of β. If the test rejects H0, it suggests that the burden of rare variants in the region is associated with the phenotype.
+Where *β* represents the effect of the burden score on the phenotype:
+ - β = 0 means that the rare variants in the region do not collectively contribute to the trait being studied (H0)
+ - β =/= 0 it suggests that the burden of rare variants in the region is associated with the phenotype (H1)
 
-This model is powerful, but only if all the variants in a region are going in the same direction (disease-causing or protective).
+Typically, a Wald test, score test, or likelihood ratio test is used to assess the significance of β. Please note that burden tests lose power if causal variants have opposite effects (e.g., some risk, some protective).
 
 ### The SKAT model:
 
-The Sequence Kernel Association Test (SKAT) is a variance component test that tests the variance of genetic effects rather than the mean. It is more flexible than a Burden test since it allows for both protective and risk variants in the same region. SKAT models the genetic effects as random effects and tests whether the variance of these effects is greater than zero.
+The Sequence Kernel Association Test (SKAT) is a **variance-component** test that tests the variance of genetic effects rather than the mean. It is more flexible than a Burden test since it allows for both protective and risk variants in the same region. SKAT models the variant effect as random effect and tests whether the variance of these effects is greater than zero.
 
-For a region with n variants SKAT assumes that:
+For a region with *n* variants, SKAT assumes that:
 
 ```math
 {y}_{i} = \alpha + \sum_{j=1}^{n} {G}_{ij} \beta_{ij} + \epsilon_{i}
@@ -75,13 +77,37 @@ For a region with n variants SKAT assumes that:
 
 Where:
 
+```math
+\beta_{j} = N(0, \tau w^2_{j})
+```
+ - `w²j` the weight of variant *j*
+ - `τ` the region unknown variance
 
+Under the null hypothesis (H0) of non-association between the region and the trait, `βj=0 for all j` is equivalent to `τ=0`. Thus, the model tests if:
+ - τ = 0, no association (H0)
+ - τ > 0, we reject the "no association" hypothesis (H1)
+
+SKAT is robust to the presence of non-causal variants and can detect associations even if only a subset of variants in the region are causal.
 
 ### The SKAT-O model:
 
-SKAT-O is a combination of both Burden and SKAT tests.
+SKAT-O is a weighted linear combination of both Burden and SKAT test statistics, designed to maximize power across a range of genetic architectures:
+
+```math
+Q_{SKAT-O} = \rho \cdot Q_{Burden} + (1-\rho) \cdot Q_{SKAT}, \quad 0 \leq \rho \leq 1
+```
+
+Where: 
+ - `Q_Burden`: Burden test statistic
+ - `Q_SKAT`: SKAT test statistic
+ - `ρ`: Weight estimated from the data to optimise power
+
+A high `ρ` value gives more weight to the Burden test statistic while a low `ρ` value gives more weight to the SKAT test statistic. When `ρ=0` SKAT-O behaves like a Burden test and when `ρ=1` it behaves like a SKAT test. The value of `ρ` is determined from the data, by performing the ratio of the fixed effect variance (Burden) and the random effect variance (SKAT).
+
+The test statistic is then computed as the weighted sum of the Burden and SKAT statistics using this estimated `ρ`.
 
 ### Summary:
+
 | Approach | Rationale | Advantage | Disadvantage | Tools |
 | --- | --- | --- | --- | --- |
 | Burden Test | Collapse rare variants in a genetic region | Powerful if all variants in the region are causal and in the same direction | Less powerful if only a few variants are causal, or have an opposite effect | CAST; WST |
