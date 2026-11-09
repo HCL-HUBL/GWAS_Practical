@@ -82,7 +82,7 @@ Typically, a Wald test, score test, or likelihood ratio test is used to assess t
 
 </details>
 
-### The SKAT model:
+### The Variance-Component model:
 
 The Sequence Kernel Association Test (SKAT) is a **variance-component** test that tests the variance of genetic effects rather than the mean. It is more flexible than a Burden test since it allows for both protective and risk variants in the same region. SKAT models the variant effect as random effect and tests whether the variance of these effects is greater than zero.
 
@@ -106,9 +106,9 @@ Under the null hypothesis (H0) of non-association between the region and the tra
 
 SKAT is robust to the presence of non-causal variants and can detect associations even if only a subset of variants in the region are causal.
 
-### The SKAT-O model:
+### The Combined model:
 
-SKAT-O is a weighted linear combination of both Burden and SKAT test statistics, designed to maximize power across a range of genetic architectures:
+SKAT-O (Sequence Kernel Association Test, Optimal) is a weighted linear combination of both Burden and SKAT test statistics, designed to maximize power across a range of genetic architectures:
 
 ```math
 Q_{SKAT-O} = \rho \cdot Q_{Burden} + (1-\rho) \cdot Q_{SKAT}, \quad 0 \leq \rho \leq 1

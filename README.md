@@ -2,13 +2,7 @@
 
 ## Introduction:
 
-A Genome Wide Association Study (GWAS) aims to identify genetic markers, often Single Nucleotide Polymorphisms (SNPs), that are associated with a phenotypic trait of interest, for example a disease. The rationale behind a GWAS depends on the type of trait under study:
-
- - For *binary* phenotypes: the allele frequencies of each SNP are compared between individuals harbouring the trait those who do not. Since we are assuming a random distribution of alleles in the population, large differences in frequencies may indicate an association between the SNP and the trait.
-
- - For *continuous* phenotypes: the distribution of trait values is compared among individuals carrying different alleles at each SNP. Assuming alleles are randomly distributed in the population, systematic differences in the average trait value between genotypes may indicate an association between the SNP and the trait.
-
-In both cases, a **p-value** is obtained for each SNP, representing the strength of the association between the SNP and the trait. A lower p-value indicates a stronger association. Please note that a low p-value does not imply a large **effect size**, which measures the impact of the SNP on the trait. Effect size is represented as an *odds ratio* for binary traits and as a *beta value* for continuous traits. Note that the effect size also indicates the direction of the allele's impact on the trait (eg: protective of deleterious).
+This repository contains the data and instructions to run and explain the concepts behind a Genome Wide Association Study (GWAS). A GWAS aims at identifying genetic markers, often Single Nucleotide Polymorphisms (SNPs), that are associated with a trait or disease of interest. Unlike candidate gene studies, GWAS scans the entire genome without prior assumptions. The last part of the practical focuses on the analysis of rare variants.
 
 This practical contains three parts:
  - [Quality Control on the input data (QC)](1_QC/)
@@ -17,9 +11,15 @@ This practical contains three parts:
 
 ## The Dataset:
 
-In this practical, we will perform GWAS and RVAS analyses using [PLINK](https://www.cog-genomics.org/plink/1.9/) and R, on a [dataset](./data/) consisting of 90 Asian HapMap individuals (Han Chinese from Beijing and Japanese from Tokyo) from the actual HapMap data. The dataset contains a subset of ~250,000 SNPs from the Affymetrix 500K SNP Array product and a simulated disease phenotype (data adapted from: https://www.cog-genomics.org/plink/1.9/resources).
+In this practical, we will perform GWAS and RVAS analyses on a [dataset](./data/) consisting of 90 Asian HapMap individuals (Han Chinese from Beijing and Japanese from Tokyo) from the actual HapMap data. The dataset contains a subset of ~250,000 SNPs from the Affymetrix 500K SNP Array product and a simulated disease phenotype (data adapted from: https://www.cog-genomics.org/plink/1.9/resources).
 
-SNPs were added *in-silico* to specific genes to create a signal for the Rare Variants Association Study (RVAS).
+SNPs were added *in-silico* to specific regions to create a signal for the Rare Variants Association Study (RVAS).
+
+## Tools
+
+ - [plink v1.9](https://www.cog-genomics.org/plink/1.9/), for the quality control steps and the GWAS analysis
+ - [SAIGE-GENE+](https://github.com/saigegit/SAIGE) for the rare variants analysis
+ - R to create the plots
 
 ## Starting point:
 
