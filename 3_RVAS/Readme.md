@@ -30,6 +30,7 @@ The plot below represents the distribution of beta values between rare (MAF < 0.
 **Q3.2**: Look at the Minor Allele Frequencies (MAF) of the top associated SNPs in our GWAS analysis, are there any rare variants? (Here, we will consider a MAF < 0.01).
 
 ```shell
+mkdir RVAS/
 plink --bfile QC/gwas_final --freq --out RVAS/gwas_final
 ```
 
