@@ -173,7 +173,7 @@ GFRA2 anno no_annot MODERATE no_annot
 First, we are going to create the null model, which represents the impact of the covariates **only** on the trait (here the population structure: "POP"). This null model will be used in step 2 for adjusting the full model.
 
 ```shell
-Rscript /opt/progrs/SAIGE/extdata/step1_fitNULLGLMM.R \
+Rscript /usr/local/bin/step1_fitNULLGLMM.R \
     --plinkFile="QC/gwas_filtered" \
     --phenoFile="../data/saige.phenofile" \
     --phenoCol="PHENOTYPE" \
@@ -209,7 +209,7 @@ SAIGE will use this ratio to adjust the test statistics to account for inflation
 This step performs burden, SKAT, and SKAT-O tests using the null model from Step 1.
 
 ```shell
-Rscript /opt/progrs/SAIGE/extdata/step2_SPAtests.R \
+Rscript /usr/local/bin/step2_SPAtests.R \
         --bedFile="QC/gwas_filtered.bed" \
         --bimFile="QC/gwas_filtered.bim" \
         --famFile="QC/gwas_filtered.fam" \
