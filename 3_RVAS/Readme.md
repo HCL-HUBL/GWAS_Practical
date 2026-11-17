@@ -175,7 +175,7 @@ First, we are going to create the null model, which represents the impact of the
 ```shell
 Rscript /usr/local/bin/step1_fitNULLGLMM.R \
     --plinkFile="QC/gwas_filtered" \
-    --phenoFile="../data/saige.phenofile" \
+    --phenoFile="./data/saige.phenofile" \
     --phenoCol="PHENOTYPE" \
     --covarColList="POP" \
     --qCovarColList="POP" \
@@ -214,7 +214,7 @@ Rscript /usr/local/bin/step2_SPAtests.R \
         --bimFile="QC/gwas_filtered.bim" \
         --famFile="QC/gwas_filtered.fam" \
         --AlleleOrder="alt-first" \
-        --groupFile="../data/saige.groupFile" \
+        --groupFile="./data/saige.groupFile" \
         --GMMATmodelFile="RVAS/saige_out.rda" \
         --varianceRatioFile="RVAS/saige_out.varianceRatio.txt" \
         --LOCO=FALSE \
